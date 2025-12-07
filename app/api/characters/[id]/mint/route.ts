@@ -10,17 +10,14 @@ import {
 import { uploadCharacterMetadata } from "@/lib/ipfs";
 import { ethers } from "ethers";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, context: { params: { id: string } }) {
   try {
     const userId = await getCurrentUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const characterId = params.id;
+    const characterId = context.params.id;
 
     // Load character + user wallet
     const character = await prisma.character.findUnique({
