@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String      @id @default(cuid())
+  authUserId    String      @unique
+  displayName   String?
+  walletAddress String?
+  createdAt     DateTime    @default(now())
+
+  characters Character[]
+  campaigns  Campaign[] @relation("GM")
+  badges     Badge[]
+}
+
+model Character {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  system          String
+  portraitUrl     String?
+  coreJson        Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isArchived      Boolean  @default(false)
+  tokenId         String?
+  chainId         Int?
+  contractAddress String?
+
+  user       User                @relation(fields: [userId], references: [id])
+  systemData CharacterSystemData?
+  campaignSlots  CampaignPlayer[]
+  sessionEvents SessionEvent[]
+  campaignStates CharacterCampaignState[]
+  downtimeActivities DowntimeActivity[]
+}
+
+model CharacterSystemData {
+  id          String    @id @default(cuid())
+  characterId String    @unique
+  level       Int?
+
+  character Character @relation(fields: [characterId], references: [id])
+}
+
+model Badge {
+  id              String   @id @default(cuid())
+  userId          String
+  tokenId         String
+  chainId         Int
+  contractAddress String
+  metadataUri     String
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  gmId      String
+  gm        User            @relation("GM", fields: [gmId], references: [id])
+
+  players   CampaignPlayer[]
+  sessions  Session[]
+  campaignStates CharacterCampaignState[]
+  gmNotes   GMNote[]
+  npcs      NPC[]
+  quests    Quest[]
+  events    SessionEvent[]
+  downtimeActivities DowntimeActivity[]
+}
+
+model CampaignPlayer {
+  id          String   @id @default(cuid())
+  campaignId  String
+  characterId String
+  createdAt   DateTime @default(now())
+  conditions  Json?
+  inventory   Json?
+
+  campaign  Campaign  @relation(fields: [campaignId], references: [id])
+  character Character @relation(fields: [characterId], references: [id])
+
+  @@unique([campaignId, characterId])
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  campaignId    String
+  sessionNumber Int
+  date          DateTime @default(now())
+  title         String?
+  summary       String?
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  events   SessionEvent[]
+  statesLastSeen CharacterCampaignState[] @relation("StateLastSeen")
+}
+
+model SessionEvent {
+  id          String           @id @default(cuid())
+  sessionId   String
+  campaignId  String
+  characterId String?
+  npcId       String?
+  questId     String?
+  eventType   String
+  value       Int?
+  payload     Json?
+  createdAt   DateTime         @default(now())
+
+  session   Session   @relation(fields: [sessionId], references: [id])
+  campaign  Campaign  @relation(fields: [campaignId], references: [id])
+  character Character? @relation(fields: [characterId], references: [id])
+  npc       NPC?      @relation(fields: [npcId], references: [id])
+  quest     Quest?    @relation(fields: [questId], references: [id])
+}
+
+model CharacterCampaignState {
+  id                String   @id @default(cuid())
+  characterId       String
+  campaignId        String
+  currentHp         Int?
+  currentXp         Int?
+  conditions        Json?
+  lastSeenSessionId String?
+
+  character Character @relation(fields: [characterId], references: [id])
+  campaign  Campaign  @relation(fields: [campaignId], references: [id])
+  lastSeenSession Session? @relation("StateLastSeen", fields: [lastSeenSessionId], references: [id])
+
+  @@unique([characterId, campaignId])
+}
+
+model GMNote {
+  id         String   @id @default(cuid())
+  campaignId String
+  title      String?
+  body       String?
+  createdAt  DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  sessionId String?
+  npcId     String?
+  questId   String?
+
+  session Session? @relation(fields: [sessionId], references: [id])
+  npc     NPC?     @relation(fields: [npcId], references: [id])
+  quest   Quest?   @relation(fields: [questId], references: [id])
+}
+
+model NPC {
+  id          String   @id @default(cuid())
+  campaignId  String
+  name        String
+  role        String?
+  description String?
+  attitude    String?
+  stats       Json?
+  createdAt   DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  events   SessionEvent[]
+  questsGiven Quest[] @relation("Giver")
+  notes    GMNote[]
+}
+
+enum QuestStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+}
+
+model Quest {
+  id          String      @id @default(cuid())
+  campaignId  String
+  giverNpcId  String?
+  title       String
+  description String?
+  status      QuestStatus @default(ACTIVE)
+  tags        String?
+  createdAt   DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  events   SessionEvent[]
+  giverNpc NPC? @relation("Giver", fields: [giverNpcId], references: [id])
+  notes    GMNote[]
+}
+
+model DowntimeActivity {
+  id             String   @id @default(cuid())
+  campaignId     String
+  characterId    String
+  type           String
+  title          String
+  description    String?
+  status         String
+  progress       Int      @default(0)
+  targetProgress Int
+  resultSummary  String?
+  linkedQuestId  String?
+  cost           Json?
+  rollResult     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campaign  Campaign  @relation(fields: [campaignId], references: [id])
+  character Character @relation(fields: [characterId], references: [id])
+  linkedQuest Quest? @relation(fields: [linkedQuestId], references: [id])
+}

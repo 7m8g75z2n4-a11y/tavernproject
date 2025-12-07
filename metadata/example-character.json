@@ -1,0 +1,12 @@
+{
+  "name": "Kael of the Liminal Stair",
+  "description": "A tiefling sorcerer who roams between campaigns through the Tavern.",
+  "image": "ipfs://Qm.../kael-passport.png",
+  "external_url": "https://tavern.app/characters/kael-id",
+  "attributes": [
+    { "trait_type": "System", "value": "D&D 5e" },
+    { "trait_type": "Class", "value": "Sorcerer" },
+    { "trait_type": "LevelSnapshot", "value": 5 },
+    { "trait_type": "Alignment", "value": "Chaotic Neutral" }
+  ]
+}
