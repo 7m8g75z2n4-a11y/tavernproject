@@ -33,7 +33,7 @@ export default function DashboardPage() {
               <h2>Your Characters</h2>
               <p>Bring your heroes back to the table anytime.</p>
             </div>
-            <Link href="/characters/1">
+            <Link href="/characters/new">
               <button className="btn-primary dashboard-section-cta" type="button">
                 + Add Character
               </button>

@@ -1,96 +1,133 @@
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import { CharacterWizard } from "@/components/characters/CharacterWizard";
+"use client";
 
-export async function createCharacterFromWizard(formData: FormData) {
-  "use server";
+import { useState } from "react";
 
-  const payload = formData.get("payload")?.toString();
-  const campaignId = formData.get("campaignId")?.toString();
+type CharacterDraft = {
+  name: string;
+  ancestry: string;
+  klass: string;
+  level: string;
+};
 
-  if (!payload) redirect("/characters");
+const initialDraft: CharacterDraft = {
+  name: "",
+  ancestry: "",
+  klass: "",
+  level: "1",
+};
 
-  let data: any;
-  try {
-    data = JSON.parse(payload);
-  } catch {
-    redirect("/characters");
+export default function NewCharacterPage() {
+  const [draft, setDraft] = useState<CharacterDraft>(initialDraft);
+
+  function update<K extends keyof CharacterDraft>(key: K, value: CharacterDraft[K]) {
+    setDraft((prev) => ({ ...prev, [key]: value }));
   }
-
-  const name = (data?.identity?.name || "").toString().trim();
-  const system = (data?.system || "dnd5e").toString().trim() || "dnd5e";
-  if (!name) redirect("/characters");
-
-  let user = await prisma.user.findFirst();
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        authUserId: "demo-user",
-        displayName: "Demo User",
-      },
-    });
-  }
-
-  const character = await prisma.character.create({
-    data: {
-      name,
-      system,
-      userId: user.id,
-      portraitUrl: data?.identity?.portraitUrl || null,
-      coreJson: {
-        system,
-        concept: data?.concept,
-        identity: data?.identity,
-        attributes: data?.attributes,
-        combat: data?.combat,
-        primaryAttack: data?.primaryAttack,
-        inventory: data?.inventory,
-        story: data?.story,
-      },
-    },
-  });
-
-  if (campaignId) {
-    await prisma.campaignPlayer.create({
-      data: {
-        campaignId,
-        characterId: character.id,
-      },
-    });
-    revalidatePath(`/campaigns/${campaignId}`);
-    redirect(`/campaigns/${campaignId}`);
-  }
-
-  revalidatePath("/characters");
-  redirect(`/characters/${character.id}`);
-}
-
-export default function NewCharacterPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const campaignId =
-    typeof searchParams.campaignId === "string" ? searchParams.campaignId : undefined;
 
   return (
-    <main className="min-h-screen bg-black text-amber-100 px-4 py-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-amber-200/80">
-            Character
+    <div className="character-new-layout">
+      {/* Left: creation form */}
+      <section className="character-new-form">
+        <header className="character-new-header">
+          <h1>Create a Character</h1>
+          <p>
+            Give your new hero a name, ancestry, and class. You&apos;ll be able to
+            refine the details later in their sheet.
           </p>
-          <h1 className="text-3xl font-semibold">Create a new character</h1>
-          <p className="text-sm opacity-70 mt-1">
-            A quick wizard to build identity, stats, gear, and story hooks.
-          </p>
+        </header>
+
+        <form
+          className="character-new-fields"
+          onSubmit={(e) => {
+            e.preventDefault();
+            // eventually: save + navigate
+            alert("This is a demo – character creation is not wired up yet.");
+          }}
+        >
+          <label className="character-new-label">
+            <span>Name</span>
+            <input
+              className="character-new-input"
+              type="text"
+              value={draft.name}
+              onChange={(e) => update("name", e.target.value)}
+              placeholder="Elira Dawnwhisper"
+            />
+          </label>
+
+          <div className="character-new-row">
+            <label className="character-new-label">
+              <span>Ancestry</span>
+              <input
+                className="character-new-input"
+                type="text"
+                value={draft.ancestry}
+                onChange={(e) => update("ancestry", e.target.value)}
+                placeholder="Elf, Tiefling..."
+              />
+            </label>
+
+            <label className="character-new-label">
+              <span>Class</span>
+              <input
+                className="character-new-input"
+                type="text"
+                value={draft.klass}
+                onChange={(e) => update("klass", e.target.value)}
+                placeholder="Ranger, Sorcerer..."
+              />
+            </label>
+
+            <label className="character-new-label character-new-label--tiny">
+              <span>Level</span>
+              <input
+                className="character-new-input"
+                type="number"
+                min={1}
+                max={20}
+                value={draft.level}
+                onChange={(e) => update("level", e.target.value)}
+              />
+            </label>
+          </div>
+
+          <label className="character-new-label">
+            <span>Concept Notes</span>
+            <textarea
+              className="character-new-notes"
+              rows={4}
+              placeholder="Who are they? What are they running from? What do they want?"
+            />
+          </label>
+
+          <footer className="character-new-footer">
+            <button type="button" className="btn-secondary character-new-btn">
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary character-new-btn">
+              Create Character
+            </button>
+          </footer>
+        </form>
+      </section>
+
+      {/* Right: live preview */}
+      <aside className="character-new-preview">
+        <h2>Preview</h2>
+        <div className="character-new-card parchment-card">
+          <div className="character-new-avatar" />
+          <div className="character-new-meta">
+            <h3>{draft.name || "Unnamed Hero"}</h3>
+            <p className="character-new-line">
+              {draft.ancestry || "Ancestry"}{" "}
+              {draft.klass ? `• ${draft.klass}` : "• Class"}
+            </p>
+            <p className="character-new-line">Level {draft.level || "1"}</p>
+          </div>
         </div>
-        <CharacterWizard
-          createCharacterAction={createCharacterFromWizard}
-          campaignId={campaignId}
-        />
-      </div>
-    </main>
+        <p className="character-new-help">
+          This preview matches how your character will appear on the dashboard.
+        </p>
+      </aside>
+    </div>
   );
 }

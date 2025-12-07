@@ -292,6 +292,166 @@ button {
   color: var(--tavern-text-muted);
 }
 
+.character-new-layout {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.8rem;
+}
+
+@media (max-width: 900px) {
+  .character-new-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.character-new-form {
+  background: radial-gradient(circle at top, #f3e0c0 0, #cda777 65%, #b89265 100%);
+  border-radius: 26px;
+  padding: 1.6rem 1.8rem 1.9rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  color: #2a1911;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+
+.character-new-header h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+}
+
+.character-new-header p {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+}
+
+.character-new-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.character-new-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.character-new-label span {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.character-new-input {
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid rgba(31, 16, 9, 0.28);
+  background: rgba(255, 255, 255, 0.7);
+  font: inherit;
+  color: #2a1911;
+}
+
+.character-new-input:focus,
+.character-new-notes:focus {
+  outline: none;
+  border-color: #b66b1d;
+  box-shadow: 0 0 0 1px rgba(182, 107, 29, 0.4);
+}
+
+.character-new-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 0.5fr;
+  gap: 0.8rem;
+}
+
+@media (max-width: 700px) {
+  .character-new-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.character-new-label--tiny .character-new-input {
+  max-width: 80px;
+}
+
+.character-new-notes {
+  border-radius: 12px;
+  border: 1px solid rgba(31, 16, 9, 0.28);
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.7rem 0.75rem;
+  font: inherit;
+  resize: vertical;
+}
+
+.character-new-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.character-new-btn {
+  font-size: 0.85rem;
+  padding-inline: 1.2rem;
+}
+
+.character-new-preview {
+  background: radial-gradient(circle at top, #3b2415 0%, #1b1110 60%, #0b0508 100%);
+  border-radius: 26px;
+  padding: 1.6rem 1.4rem 1.8rem;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(255, 227, 186, 0.12);
+  color: var(--tavern-text-main);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.character-new-preview h2 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.character-new-card {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+}
+
+.character-new-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 20%, #f3e0c0 0, #b66b1d 55%, #3b2415 100%);
+  box-shadow: 0 0 14px rgba(248, 177, 51, 0.6);
+}
+
+.character-new-meta h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.character-new-line {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.character-new-help {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--tavern-text-muted);
+}
+
 .auth-input {
   padding: 0.6rem 0.7rem;
   border-radius: 10px;
