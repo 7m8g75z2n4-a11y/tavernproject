@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CharacterOrb3D } from "@/app/components/CharacterOrb3D";
 
 const mockCharacters: Record<string, any> = {
   "1": {
@@ -127,7 +128,7 @@ export default function CharacterSheetPage({ params }: PageProps) {
 
       <aside className="character-portrait">
         <div className="portrait-orb">
-          <div className="portrait-silhouette" />
+          <CharacterOrb3D />
         </div>
         <p className="portrait-caption">
           Your hero will appear here in 3D, resting between adventures.
