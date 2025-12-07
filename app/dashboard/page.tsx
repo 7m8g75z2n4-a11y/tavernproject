@@ -77,9 +77,9 @@ export default function DashboardPage() {
                   <p className="card-subtitle">{c.role}</p>
                 </div>
                 <p className="card-meta">{c.schedule}</p>
-                <Link href="/sessions/1">
+                <Link href="/campaigns/1">
                   <button className="btn-secondary card-button" type="button">
-                    Open Session Panel
+                    Open Campaign
                   </button>
                 </Link>
               </article>

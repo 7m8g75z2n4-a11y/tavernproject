@@ -809,6 +809,142 @@ button {
   font-size: 0.9rem;
   color: var(--tavern-text-muted);
 }
+
+.campaign-layout {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
+  gap: 1.8rem;
+}
+
+.campaign-panel {
+  background: radial-gradient(circle at top, #f3e0c0 0, #cda777 65%, #b89265 100%);
+  border-radius: 26px;
+  padding: 1.6rem 1.8rem 1.9rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  color: #2a1911;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.campaign-header h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+}
+
+.campaign-subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.campaign-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.campaign-share h2,
+.campaign-notes h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.4rem;
+}
+
+.campaign-share p,
+.campaign-notes p {
+  margin: 0 0 0.8rem;
+  font-size: 0.9rem;
+}
+
+.campaign-link-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.campaign-link-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid rgba(31, 16, 9, 0.28);
+  background: rgba(255, 255, 255, 0.7);
+  font: inherit;
+  color: #2a1911;
+}
+
+.campaign-link-btn {
+  font-size: 0.85rem;
+  padding-inline: 1.1rem;
+}
+
+.campaign-notes {
+  margin-top: 0.4rem;
+}
+
+.campaign-party {
+  background: radial-gradient(circle at top, #3b2415 0%, #1b1110 60%, #0b0508 100%);
+  border-radius: 26px;
+  padding: 1.6rem 1.4rem 1.8rem;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(255, 227, 186, 0.12);
+  color: var(--tavern-text-main);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.campaign-party-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  margin: 0 0 0.6rem;
+}
+
+.campaign-party-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.campaign-party-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.6rem 0.7rem;
+  border-radius: 16px;
+  background: rgba(5, 3, 6, 0.4);
+  border: 1px solid rgba(255, 227, 186, 0.1);
+}
+
+.campaign-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 20%, #f3e0c0 0, #b66b1d 55%, #3b2415 100%);
+  box-shadow: 0 0 12px rgba(248, 177, 51, 0.5);
+}
+
+.campaign-party-info h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.campaign-party-role {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--tavern-text-muted);
+}
+
+.campaign-party-level {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+}
 @media (max-width: 800px) {
   .tavern-main {
     padding: 32px 16px 48px;
@@ -855,6 +991,12 @@ button {
 
 @media (max-width: 700px) {
   .session-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .campaign-layout {
     grid-template-columns: 1fr;
   }
 }
