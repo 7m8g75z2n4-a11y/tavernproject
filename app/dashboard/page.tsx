@@ -9,6 +9,8 @@ const mockCampaigns = [
   { id: 2, name: "Emberfall Heist", role: "GM", schedule: "On Hiatus" },
 ];
 
+import Link from "next/link";
+
 export default function DashboardPage() {
   return (
     <div className="dashboard">
@@ -31,9 +33,11 @@ export default function DashboardPage() {
               <h2>Your Characters</h2>
               <p>Bring your heroes back to the table anytime.</p>
             </div>
-            <button className="btn-primary dashboard-section-cta" type="button">
-              + Add Character
-            </button>
+            <Link href="/characters/1">
+              <button className="btn-primary dashboard-section-cta" type="button">
+                + Add Character
+              </button>
+            </Link>
           </header>
 
           <div className="dashboard-grid">
@@ -44,9 +48,11 @@ export default function DashboardPage() {
                   <p className="card-subtitle">{c.subtitle}</p>
                 </div>
                 <p className="card-meta">{c.status}</p>
-                <button className="btn-secondary card-button" type="button">
-                  Open Sheet
-                </button>
+                <Link href="/characters/1">
+                  <button className="btn-secondary card-button" type="button">
+                    Open Sheet
+                  </button>
+                </Link>
               </article>
             ))}
           </div>
@@ -71,9 +77,11 @@ export default function DashboardPage() {
                   <p className="card-subtitle">{c.role}</p>
                 </div>
                 <p className="card-meta">{c.schedule}</p>
-                <button className="btn-secondary card-button" type="button">
-                  Open Campaign
-                </button>
+                <Link href="/sessions/1">
+                  <button className="btn-secondary card-button" type="button">
+                    Open Session Panel
+                  </button>
+                </Link>
               </article>
             ))}
           </div>
