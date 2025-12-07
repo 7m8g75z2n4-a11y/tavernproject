@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function LandingPage() {
   return (
     <div className="landing">
@@ -19,12 +21,16 @@ export default function LandingPage() {
               across campaigns.
             </p>
             <div className="landing-actions">
-              <button className="btn-primary" type="button">
-                Create Account
-              </button>
-              <button className="btn-secondary" type="button">
-                Explore Demo
-              </button>
+              <Link href="/auth">
+                <button className="btn-primary" type="button">
+                  Create Account
+                </button>
+              </Link>
+              <Link href="/dashboard">
+                <button className="btn-secondary" type="button">
+                  Explore Demo
+                </button>
+              </Link>
             </div>
             <p className="tagline">Your story continues inside.</p>
           </div>

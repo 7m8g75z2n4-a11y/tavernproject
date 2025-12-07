@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function AuthPage() {
   return (
     <div className="auth">
@@ -42,6 +44,11 @@ export default function AuthPage() {
           <p className="auth-footnote">
             The Tavern keeps your characters safe and your stories yours.
           </p>
+          <Link href="/dashboard">
+            <button type="button" className="btn-secondary auth-submit">
+              Explore Tavern (Demo)
+            </button>
+          </Link>
         </section>
       </div>
       <div className="auth-lantern" />
