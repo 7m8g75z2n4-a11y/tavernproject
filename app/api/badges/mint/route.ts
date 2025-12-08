@@ -1,106 +1,54 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/auth";
-import { minterSigner, tavernBadgesAbi, TAVERN_BADGES_ADDRESS, BADGES_CHAIN_ID } from "@/lib/web3";
-import { isWeb3Configured, makeStorageClient } from "@/lib/ipfs";
-import { ethers } from "ethers";
+import { NextResponse } from "next/server";
+import { mintBadgeOnChain } from "@/lib/chain";
 
-// Body: { targetUserId?: string, metadata: {...} }
-export async function POST(req: NextRequest) {
-  try {
-    const userId = await getCurrentUserId(req);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export async function POST(req: Request) {
+  const body = (await req.json().catch(() => ({}))) as {
+    walletAddress?: string;
+    sessionId?: string;
+    label?: string;
+  };
 
-    if (!TAVERN_BADGES_ADDRESS || !minterSigner) {
-      return NextResponse.json(
-        { error: "Minting is not configured for this deployment." },
-        { status: 500 }
-      );
-    }
+  const fallbackWallet = process.env.TAVERN_TEST_WALLET || "";
+  const walletAddress = body.walletAddress || fallbackWallet;
 
-    if (!TAVERN_BADGES_ADDRESS || !minterSigner) {
-      return NextResponse.json(
-        { error: "Minting is not configured for this deployment." },
-        { status: 500 }
-      );
-    }
-    if (!isWeb3Configured()) {
-      return NextResponse.json(
-        { error: "Badge minting is not configured (WEB3_STORAGE_TOKEN is missing)." },
-        { status: 500 }
-      );
-    }
-
-    const { targetUserId, metadata } = await req.json();
-    const userToMint = targetUserId || userId;
-
-    if (!metadata || typeof metadata !== "object") {
-      return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: userToMint },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    if (!user.walletAddress) {
-      return NextResponse.json(
-        { error: "User has no wallet connected" },
-        { status: 400 }
-      );
-    }
-
-    const tokenURI = await makeStorageClient().put(
-      [
-        new File([JSON.stringify(metadata)], "metadata.json", {
-          type: "application/json",
-        }),
-      ],
-      {
-        name: "tavern-badge",
-        wrapWithDirectory: false,
-      }
-    );
-
-    const contract = new ethers.Contract(
-      TAVERN_BADGES_ADDRESS,
-      tavernBadgesAbi,
-      minterSigner
-    );
-
-    const tx = await contract.mintBadge(user.walletAddress, tokenURI);
-    const receipt = await tx.wait();
-
-    const nextTokenId = await contract.nextTokenId();
-    const tokenId = nextTokenId.toString();
-
-    const badge = await prisma.badge.create({
-      data: {
-        userId: user.id,
-        tokenId,
-        chainId: BADGES_CHAIN_ID,
-        contractAddress: TAVERN_BADGES_ADDRESS,
-        metadataUri: tokenURI,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      tokenId,
-      chainId: BADGES_CHAIN_ID,
-      contractAddress: TAVERN_BADGES_ADDRESS,
-      txHash: receipt.hash,
-      badge,
-    });
-  } catch (err: any) {
-    console.error("Badge mint error", err);
+  if (!walletAddress) {
     return NextResponse.json(
-      { error: "Badge mint failed", details: err?.message },
+      {
+        ok: false,
+        error:
+          "No wallet address provided and TAVERN_TEST_WALLET is not set.",
+      },
+      { status: 400 }
+    );
+  }
+
+  const sessionId = body.sessionId || "demo-session";
+  const label = body.label || "Session Badge";
+  const tokenUri = `ipfs://badge/${sessionId}`;
+
+  try {
+    const result = await mintBadgeOnChain({
+      to: walletAddress,
+      tokenUri,
+    });
+
+    return NextResponse.json(
+      {
+        ok: true,
+        message: result.simulated
+          ? "Simulated badge mint (no chain config)."
+          : "Badge minted successfully.",
+        txHash: result.txHash,
+        tokenId: result.tokenId,
+        tokenUri,
+        label,
+      },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("[badge mint] error", err);
+    return NextResponse.json(
+      { ok: false, error: "Badge mint failed on the server." },
       { status: 500 }
     );
   }

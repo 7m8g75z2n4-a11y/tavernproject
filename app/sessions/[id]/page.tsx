@@ -1,13 +1,56 @@
 "use client";
 
 import { sessionsById } from "@/lib/data";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 
 type SessionPageProps = {
   params: { id: string };
 };
 
 export default function SessionPage({ params }: SessionPageProps) {
-  const session = sessionsById[params.id] ?? sessionsById["1"];
+  const dynamicParams = useParams() as { id?: string };
+  const sessionId = dynamicParams?.id ?? params.id ?? "demo-session";
+  const session = sessionsById[sessionId] ?? sessionsById["1"];
+
+  const [isMintingBadge, setIsMintingBadge] = useState(false);
+  const [badgeMessage, setBadgeMessage] = useState<string | null>(null);
+  const [badgeError, setBadgeError] = useState<string | null>(null);
+
+  async function handleMintBadgeClick() {
+    if (isMintingBadge) return;
+    setIsMintingBadge(true);
+    setBadgeMessage(null);
+    setBadgeError(null);
+
+    try {
+      const res = await fetch("/api/badges/mint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        setBadgeError("Badge mint failed. " + text);
+        return;
+      }
+
+      const data = await res.json();
+      if (data.ok) {
+        const base = data.message ?? "Badge minted.";
+        const tx = data.txHash ? ` Tx: ${data.txHash}` : "";
+        setBadgeMessage(base + tx);
+      } else {
+        setBadgeError(data.error ?? "Badge mint failed on server.");
+      }
+    } catch (err) {
+      console.error("Badge mint error", err);
+      setBadgeError("Unexpected error while minting badge.");
+    } finally {
+      setIsMintingBadge(false);
+    }
+  }
 
   return (
     <div className="session-layout">
@@ -66,12 +109,24 @@ export default function SessionPage({ params }: SessionPageProps) {
         </div>
 
         <footer className="session-footer">
-          <button type="button" className="btn-secondary session-footer-btn">
-            Save for Later
+          <div className="session-footer-actions">
+            <button type="button" className="btn-secondary session-footer-btn">
+              Save for Later
+            </button>
+            <button type="button" className="btn-primary session-footer-btn">
+              End Session
+            </button>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary session-mint-badge-btn"
+            onClick={handleMintBadgeClick}
+            disabled={isMintingBadge}
+          >
+            {isMintingBadge ? "Minting Badge..." : "Mint Session Badge"}
           </button>
-          <button type="button" className="btn-primary session-footer-btn">
-            End Session
-          </button>
+          {badgeMessage && <p className="session-mint-message">{badgeMessage}</p>}
+          {badgeError && <p className="session-mint-error">{badgeError}</p>}
         </footer>
       </section>
 
