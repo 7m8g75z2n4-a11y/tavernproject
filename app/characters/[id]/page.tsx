@@ -1,48 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { CharacterOrb3D } from "@/app/components/CharacterOrb3D";
-
-const mockCharacters: Record<string, any> = {
-  "1": {
-    id: "1",
-    name: "Elira Dawnwhisper",
-    subtitle: "Elf Ranger • Level 5",
-    hp: "38 / 38",
-    ac: 15,
-    speed: "30 ft",
-    stats: {
-      STR: 10,
-      DEX: 18,
-      CON: 14,
-      INT: 12,
-      WIS: 16,
-      CHA: 11,
-    },
-    features: ["Favored Foe", "Sharpshooter", "Natural Explorer"],
-    inventory: ["Longbow", "Shortswords (2)", "Traveler’s Cloak", "Healing Potion (x2)"],
-    notes: "Scout and archer of the party. Distrustful of cities, prefers the treeline.",
-  },
-  "2": {
-    id: "2",
-    name: "Brother Hal",
-    subtitle: "Human Cleric • Level 3",
-    hp: "26 / 26",
-    ac: 17,
-    speed: "30 ft",
-    stats: {
-      STR: 12,
-      DEX: 10,
-      CON: 14,
-      INT: 11,
-      WIS: 16,
-      CHA: 13,
-    },
-    features: ["Channel Divinity", "Bless", "Spare the Dying"],
-    inventory: ["Mace", "Shield", "Healer’s Kit", "Holy Symbol"],
-    notes: "Kind-hearted cleric who tends to the wounded and keeps spirits lifted.",
-  },
-};
+import { charactersById } from "@/lib/data";
+import { useState } from "react";
 
 type PageProps = {
   params: { id: string };
@@ -52,7 +12,7 @@ const tabs = ["Overview", "Stats", "Inventory"] as const;
 type Tab = (typeof tabs)[number];
 
 export default function CharacterSheetPage({ params }: PageProps) {
-  const character = mockCharacters[params.id] ?? mockCharacters["1"];
+  const character = charactersById[params.id] ?? charactersById["1"];
 
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
 

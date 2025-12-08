@@ -1,41 +1,11 @@
-"use client";
+import { campaignsById } from "@/lib/data";
 
 type CampaignPageProps = {
   params: { id: string };
 };
 
-type PartyMember = {
-  id: string;
-  name: string;
-  role: string;
-  level: string;
-};
-
-type Campaign = {
-  id: string;
-  name: string;
-  gm: string;
-  partyLink: string;
-  party: PartyMember[];
-};
-
-const mockCampaigns: Record<string, Campaign> = {
-  "1": {
-    id: "1",
-    name: "Curse of Strahd",
-    gm: "GM Thomas",
-    partyLink: "https://tavern.app/join/curse-of-strahd-demo",
-    party: [
-      { id: "1", name: "Kael", role: "Race Sorcerer", level: "Level 5" },
-      { id: "2", name: "Rhea", role: "Ranger", level: "Level 3" },
-      { id: "3", name: "Thalia", role: "Elf Cleric", level: "Level 3" },
-      { id: "4", name: "Brennar", role: "Paladin", level: "Level 4" },
-    ],
-  },
-};
-
 export default function CampaignPage({ params }: CampaignPageProps) {
-  const campaign = mockCampaigns[params.id] ?? mockCampaigns["1"];
+  const campaign = campaignsById[params.id] ?? campaignsById["1"];
 
   return (
     <div className="campaign-layout">
@@ -51,8 +21,7 @@ export default function CampaignPage({ params }: CampaignPageProps) {
           <div className="campaign-share">
             <h2>Share Link</h2>
             <p>
-              Send this link to your players to invite them to the party and keep everyone in sync between
-              sessions.
+              Send this link to your players to invite them to the party and keep everyone in sync between sessions.
             </p>
             <div className="campaign-link-row">
               <input className="campaign-link-input" type="text" value={campaign.partyLink} readOnly />
@@ -71,8 +40,8 @@ export default function CampaignPage({ params }: CampaignPageProps) {
           <div className="campaign-notes">
             <h2>Campaign Notes</h2>
             <p>
-              Use this space to remember hooks, villains, locations, and open threads. In a future version
-              this will sync with your session logs.
+              Use this space to remember hooks, villains, locations, and open threads. In a future version this will sync
+              with your session logs.
             </p>
           </div>
         </div>

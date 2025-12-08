@@ -1,20 +1,13 @@
 "use client";
 
+import { sessionsById } from "@/lib/data";
+
 type SessionPageProps = {
   params: { id: string };
 };
 
-const mockSessions: Record<string, any> = {
-  "1": {
-    id: "1",
-    title: "Session 7: The Emberfall Heist",
-    date: "Last played: 12 Rainfall",
-    partyName: "The Emberfall Company",
-  },
-};
-
 export default function SessionPage({ params }: SessionPageProps) {
-  const session = mockSessions[params.id] ?? mockSessions["1"];
+  const session = sessionsById[params.id] ?? sessionsById["1"];
 
   return (
     <div className="session-layout">
