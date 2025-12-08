@@ -71,6 +71,20 @@ button {
     drop-shadow(0 0 14px rgba(255, 185, 90, 0.4));
 }
 
+.tavern-logo-link:hover .tavern-logo-img {
+  filter:
+    drop-shadow(0 0 10px rgba(255, 195, 120, 0.55))
+    brightness(1.05);
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 600px) {
+  .tavern-logo-img {
+    max-height: 48px;
+    width: auto;
+  }
+}
+
 .tavern-main {
   flex: 1;
   display: flex;

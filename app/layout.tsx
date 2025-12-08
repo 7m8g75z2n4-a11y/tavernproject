@@ -5,6 +5,9 @@ import "../styles/globals.css";
 export const metadata = {
   title: "Tavern",
   description: "Where your characters gather.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
