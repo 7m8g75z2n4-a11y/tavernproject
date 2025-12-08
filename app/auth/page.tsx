@@ -1,23 +1,48 @@
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function AuthPage() {
+  const [email, setEmail] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    await signIn("credentials", {
+      email,
+      redirect: true,
+      callbackUrl: "/dashboard",
+    });
+  }
+
   return (
     <div className="auth">
       <div className="auth-panel">
         <section className="auth-section auth-create">
           <h1 className="auth-title">TAVERN</h1>
           <h2 className="auth-heading">Create Account</h2>
-          <form className="auth-form">
+          <form className="auth-form" onSubmit={handleSubmit}>
             <label className="auth-label">
               <span>Email</span>
-              <input type="email" className="auth-input" />
+              <input
+                type="email"
+                className="auth-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@example.com"
+              />
             </label>
-            <label className="auth-label">
-              <span>Password</span>
-              <input type="password" className="auth-input" />
-            </label>
-            <button type="button" className="btn-primary auth-submit">
-              Enter
+            <button type="submit" className="btn-primary auth-submit">
+              Enter Tavern
             </button>
           </form>
         </section>
@@ -27,18 +52,21 @@ export default function AuthPage() {
         </div>
 
         <section className="auth-section auth-signin">
-          <form className="auth-form">
+          <form className="auth-form" onSubmit={handleSubmit}>
             <label className="auth-label">
               <span>Email Address</span>
-              <input type="email" className="auth-input" />
+              <input
+                type="email"
+                className="auth-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@example.com"
+              />
             </label>
-            <label className="auth-label">
-              <span>Password</span>
-              <input type="password" className="auth-input" />
-            </label>
-            <button type="button" className="btn-secondary auth-submit auth-google">
+            <button type="submit" className="btn-secondary auth-submit auth-google">
               <span className="auth-google-icon" />
-              Continue with Google
+              Continue with Email
             </button>
           </form>
           <p className="auth-footnote">

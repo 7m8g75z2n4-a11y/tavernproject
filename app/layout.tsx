@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import SessionProviderWrapper from "./SessionProviderWrapper";
 import "../styles/globals.css";
 
 export const metadata = {
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               />
             </Link>
           </header>
-          <main className="tavern-main">{children}</main>
+          <main className="tavern-main">
+            <SessionProviderWrapper>{children}</SessionProviderWrapper>
+          </main>
         </div>
       </body>
     </html>
