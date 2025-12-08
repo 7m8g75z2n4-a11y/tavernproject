@@ -15,6 +15,44 @@ export default function CharacterSheetPage({ params }: PageProps) {
   const character = charactersById[params.id] ?? charactersById["1"];
 
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintMessage, setMintMessage] = useState<string | null>(null);
+  const [mintError, setMintError] = useState<string | null>(null);
+
+  async function handleMintClick() {
+    if (isMinting) return;
+    setIsMinting(true);
+    setMintMessage(null);
+    setMintError(null);
+
+    try {
+      const res = await fetch(`/api/characters/${character.id}/mint`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        setMintError("Mint failed. " + text);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.ok) {
+        const base = data.message ?? "Character minted successfully.";
+        const tx = data.txHash ? ` Tx: ${data.txHash}` : "";
+        setMintMessage(base + tx);
+      } else {
+        setMintError(data.error ?? "Mint failed on the server.");
+      }
+    } catch (err) {
+      console.error("Mint error", err);
+      setMintError("Unexpected error while minting.");
+    } finally {
+      setIsMinting(false);
+    }
+  }
 
   return (
     <div className="character-layout">
@@ -93,6 +131,19 @@ export default function CharacterSheetPage({ params }: PageProps) {
         <p className="portrait-caption">
           Your hero will appear here in 3D, resting between adventures.
         </p>
+        <div className="character-mint-panel">
+          <button
+            type="button"
+            className="btn-primary character-mint-button"
+            onClick={handleMintClick}
+            disabled={isMinting}
+          >
+            {isMinting ? "Minting..." : "Mint Character"}
+          </button>
+
+          {mintMessage && <p className="character-mint-message">{mintMessage}</p>}
+          {mintError && <p className="character-mint-error">{mintError}</p>}
+        </div>
       </aside>
     </div>
   );
