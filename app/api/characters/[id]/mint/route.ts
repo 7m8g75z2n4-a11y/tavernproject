@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth";
-import {
-  minterSigner,
-  tavernCharactersAbi,
-  TAVERN_CHARACTERS_ADDRESS,
-  CHAIN_ID,
-} from "@/lib/web3";
+import { minterSigner, tavernCharactersAbi, TAVERN_CHARACTERS_ADDRESS, CHAIN_ID } from "@/lib/web3";
 import { uploadCharacterMetadata } from "@/lib/ipfs";
 import { ethers } from "ethers";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+type MintRouteContext = {
+  params: { id: string };
+};
+
+export async function GET(req: NextRequest, { params }: MintRouteContext) {
+  const { id } = params;
+  return NextResponse.json({ ok: true, characterId: id });
+}
+
+export async function POST(req: NextRequest, { params }: MintRouteContext) {
   try {
     const userId = await getCurrentUserId(req);
     if (!userId) {
