@@ -1,45 +1,40 @@
 import { Web3Storage } from "web3.storage";
 
-const token = process.env.WEB3_STORAGE_TOKEN;
+const token = process.env.WEB3_STORAGE_TOKEN ?? "";
 
-if (!token) {
-  throw new Error("WEB3_STORAGE_TOKEN not set");
+export function isWeb3Configured() {
+  return !!token;
 }
 
-const client = new Web3Storage({ token });
+export function makeStorageClient() {
+  if (!token) {
+    throw new Error("WEB3_STORAGE_TOKEN is not set");
+  }
+  return new Web3Storage({ token });
+}
 
-export async function uploadCharacterMetadata(
-  metadata: Record<string, any>
-): Promise<string> {
+export async function uploadCharacterMetadata(metadata: Record<string, any>): Promise<string> {
   const blob = new Blob([JSON.stringify(metadata)], {
     type: "application/json",
   });
 
   const files = [new File([blob], "metadata.json")];
 
-  const cid = await client.put(files, {
+  const cid = await makeStorageClient().put(files, {
     name: "tavern-character",
     wrapWithDirectory: false,
   });
 
-  // wrapWithDirectory=false means the file is directly at the CID
   return `ipfs://${cid}`;
 }
 
-export async function uploadCharacterWithImage(
-  metadata: Record<string, any>,
-  imageBuffer: Buffer
-): Promise<string> {
-  const metadataFile = new File(
-    [JSON.stringify(metadata)],
-    "metadata.json",
-    { type: "application/json" }
-  );
+export async function uploadCharacterWithImage(metadata: Record<string, any>, imageBuffer: Buffer): Promise<string> {
+  const metadataFile = new File([JSON.stringify(metadata)], "metadata.json", { type: "application/json" });
   const imageFile = new File([imageBuffer as unknown as BlobPart], "image.png", {
     type: "image/png",
   });
 
-  const cid = await client.put([metadataFile, imageFile], {
+  const cid = await makeStorageClient().put([metadataFile, imageFile], {
     name: "tavern-character-with-image",
   });
 

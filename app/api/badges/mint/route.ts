@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth";
 import { minterSigner, tavernBadgesAbi, TAVERN_BADGES_ADDRESS, BADGES_CHAIN_ID } from "@/lib/web3";
-import { uploadCharacterMetadata } from "@/lib/ipfs";
+import { isWeb3Configured, makeStorageClient } from "@/lib/ipfs";
 import { ethers } from "ethers";
 
 // Body: { targetUserId?: string, metadata: {...} }
@@ -16,6 +16,19 @@ export async function POST(req: NextRequest) {
     if (!TAVERN_BADGES_ADDRESS || !minterSigner) {
       return NextResponse.json(
         { error: "Minting is not configured for this deployment." },
+        { status: 500 }
+      );
+    }
+
+    if (!TAVERN_BADGES_ADDRESS || !minterSigner) {
+      return NextResponse.json(
+        { error: "Minting is not configured for this deployment." },
+        { status: 500 }
+      );
+    }
+    if (!isWeb3Configured()) {
+      return NextResponse.json(
+        { error: "Badge minting is not configured (WEB3_STORAGE_TOKEN is missing)." },
         { status: 500 }
       );
     }
@@ -42,7 +55,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const tokenURI = await uploadCharacterMetadata(metadata);
+    const tokenURI = await makeStorageClient().put(
+      [
+        new File([JSON.stringify(metadata)], "metadata.json", {
+          type: "application/json",
+        }),
+      ],
+      {
+        name: "tavern-badge",
+        wrapWithDirectory: false,
+      }
+    );
 
     const contract = new ethers.Contract(
       TAVERN_BADGES_ADDRESS,
