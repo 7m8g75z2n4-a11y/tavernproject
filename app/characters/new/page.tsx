@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
+import { characters as seedCharacters } from "@/lib/data";
+import type { Character } from "@/lib/data";
+import { loadCharactersFromStorage, saveCharactersToStorage } from "@/lib/storage";
 
 type CharacterDraft = {
   name: string;
@@ -18,31 +22,64 @@ const initialDraft: CharacterDraft = {
 
 export default function NewCharacterPage() {
   const [draft, setDraft] = useState<CharacterDraft>(initialDraft);
+  const router = useRouter();
 
   function update<K extends keyof CharacterDraft>(key: K, value: CharacterDraft[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
   }
 
+  function buildNewCharacter(): Character {
+    const id = Date.now().toString();
+    const subtitleParts = [];
+    if (draft.ancestry) subtitleParts.push(draft.ancestry);
+    if (draft.klass) subtitleParts.push(draft.klass);
+    const subtitle =
+      subtitleParts.length > 0
+        ? `${subtitleParts.join(" ")} • Level ${draft.level || "1"}`
+        : `Level ${draft.level || "1"}`;
+
+    return {
+      id,
+      name: draft.name || "Unnamed Hero",
+      subtitle,
+      hp: "10 / 10",
+      ac: 10,
+      speed: "30 ft",
+      stats: {
+        STR: 10,
+        DEX: 10,
+        CON: 10,
+        INT: 10,
+        WIS: 10,
+        CHA: 10,
+      },
+      features: [],
+      inventory: [],
+      notes: "",
+    };
+  }
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const existing = loadCharactersFromStorage() ?? seedCharacters;
+    const newChar = buildNewCharacter();
+    const updated = [...existing, newChar];
+    saveCharactersToStorage(updated);
+    router.push("/dashboard");
+  }
+
   return (
     <div className="character-new-layout">
-      {/* Left: creation form */}
       <section className="character-new-form">
         <header className="character-new-header">
           <h1>Create a Character</h1>
           <p>
-            Give your new hero a name, ancestry, and class. You&apos;ll be able to
-            refine the details later in their sheet.
+            Give your new hero a name, ancestry, and class. You&apos;ll be able to refine the details later in their
+            sheet.
           </p>
         </header>
 
-        <form
-          className="character-new-fields"
-          onSubmit={(e) => {
-            e.preventDefault();
-            // eventually: save + navigate
-            alert("This is a demo – character creation is not wired up yet.");
-          }}
-        >
+        <form className="character-new-fields" onSubmit={handleSubmit}>
           <label className="character-new-label">
             <span>Name</span>
             <input
@@ -100,7 +137,7 @@ export default function NewCharacterPage() {
           </label>
 
           <footer className="character-new-footer">
-            <button type="button" className="btn-secondary character-new-btn">
+            <button type="button" className="btn-secondary character-new-btn" onClick={() => router.push("/dashboard")}>
               Cancel
             </button>
             <button type="submit" className="btn-primary character-new-btn">
@@ -110,7 +147,6 @@ export default function NewCharacterPage() {
         </form>
       </section>
 
-      {/* Right: live preview */}
       <aside className="character-new-preview">
         <h2>Preview</h2>
         <div className="character-new-card parchment-card">
@@ -118,8 +154,7 @@ export default function NewCharacterPage() {
           <div className="character-new-meta">
             <h3>{draft.name || "Unnamed Hero"}</h3>
             <p className="character-new-line">
-              {draft.ancestry || "Ancestry"}{" "}
-              {draft.klass ? `• ${draft.klass}` : "• Class"}
+              {draft.ancestry || "Ancestry"} {draft.klass ? `• ${draft.klass}` : "• Class"}
             </p>
             <p className="character-new-line">Level {draft.level || "1"}</p>
           </div>
