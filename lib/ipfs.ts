@@ -1,4 +1,4 @@
-import { Web3Storage, File } from "web3.storage";
+import { Web3Storage } from "web3.storage";
 
 const token = process.env.WEB3_STORAGE_TOKEN;
 
@@ -35,7 +35,7 @@ export async function uploadCharacterWithImage(
     "metadata.json",
     { type: "application/json" }
   );
-  const imageFile = new File([imageBuffer], "image.png", {
+  const imageFile = new File([imageBuffer as unknown as BlobPart], "image.png", {
     type: "image/png",
   });
 

@@ -1,29 +1,16 @@
 import { ethers } from "ethers";
 
 export const CHAIN_ID = Number(process.env.CHAIN_ID || 137);
-export const TAVERN_CHARACTERS_ADDRESS = process.env
-  .TAVERN_CHARACTERS_ADDRESS as string;
-export const TAVERN_BADGES_ADDRESS = process.env
-  .BADGES_CONTRACT_ADDRESS as string;
+export const TAVERN_CHARACTERS_ADDRESS = process.env.TAVERN_CHARACTERS_ADDRESS ?? "";
+export const TAVERN_BADGES_ADDRESS = process.env.BADGES_CONTRACT_ADDRESS ?? "";
 export const BADGES_CHAIN_ID = Number(process.env.BADGES_CHAIN_ID || CHAIN_ID);
 
-if (!TAVERN_CHARACTERS_ADDRESS) {
-  throw new Error("TAVERN_CHARACTERS_ADDRESS is not set");
-}
-if (!TAVERN_BADGES_ADDRESS) {
-  throw new Error("BADGES_CONTRACT_ADDRESS is not set");
-}
+const RPC_URL = process.env.RPC_URL ?? "";
+const MINTER_PRIVATE_KEY = process.env.MINTER_PRIVATE_KEY ?? "";
 
-const RPC_URL = process.env.RPC_URL as string;
-const MINTER_PRIVATE_KEY = process.env.MINTER_PRIVATE_KEY as string;
-
-if (!RPC_URL || !MINTER_PRIVATE_KEY) {
-  throw new Error("RPC_URL or MINTER_PRIVATE_KEY not set");
-}
-
-// Simple provider + signer
-export const provider = new ethers.JsonRpcProvider(RPC_URL);
-export const minterSigner = new ethers.Wallet(MINTER_PRIVATE_KEY, provider);
+export const provider = RPC_URL ? new ethers.JsonRpcProvider(RPC_URL) : null;
+export const minterSigner =
+  RPC_URL && MINTER_PRIVATE_KEY && provider ? new ethers.Wallet(MINTER_PRIVATE_KEY, provider) : null;
 
 // Minimal ABI for TavernCharacters
 export const tavernCharactersAbi = [
