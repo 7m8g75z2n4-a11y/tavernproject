@@ -1,24 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { campaigns, characters as seedCharacters } from "@/lib/data";
-import { loadCharactersFromStorage, saveCharactersToStorage } from "@/lib/storage";
-import type { Character } from "@/lib/data";
+import { useState } from "react";
+import type { Character } from "@prisma/client";
+import { campaigns } from "@/lib/data";
 
-export default function DashboardClient() {
-  const [characters, setCharacters] = useState<Character[]>(seedCharacters);
+type DashboardClientProps = {
+  initialCharacters: Character[];
+};
 
-  useEffect(() => {
-    const stored = loadCharactersFromStorage();
-    if (stored && stored.length > 0) {
-      setCharacters(stored);
-    }
-  }, []);
-
-  useEffect(() => {
-    saveCharactersToStorage(characters);
-  }, [characters]);
+export default function DashboardClient({ initialCharacters }: DashboardClientProps) {
+  const [characters] = useState<Character[]>(initialCharacters);
 
   return (
     <div className="dashboard">
@@ -48,24 +40,29 @@ export default function DashboardClient() {
             </Link>
           </header>
 
-          <div className="dashboard-grid">
-            {characters.map((c) => (
-              <article key={c.id} className="card parchment-card character-card">
-                <div className="card-header">
-                  <h3>{c.name}</h3>
-                  <p className="card-subtitle">{c.subtitle}</p>
-                </div>
-                <p className="card-meta">
-                  HP {c.hp} â€¢ AC {c.ac}
-                </p>
-                <Link href={`/characters/${c.id}`}>
-                  <button className="btn-secondary card-button" type="button">
-                    Open Sheet
-                  </button>
-                </Link>
-              </article>
-            ))}
-          </div>
+          {characters.length === 0 ? (
+            <p className="card-subtitle">No characters yet. Create your first hero to get started.</p>
+          ) : (
+            <div className="dashboard-grid">
+              {characters.map((c) => (
+                <article key={c.id} className="card parchment-card character-card">
+                  <div className="card-header">
+                    <h3>{c.name}</h3>
+                    <p className="card-subtitle">{c.subtitle}</p>
+                  </div>
+                  <p className="card-meta">
+                    {c.hp ? `HP ${c.hp}` : null}
+                    {c.ac != null ? (c.hp ? " • " : "") + `AC ${c.ac}` : null}
+                  </p>
+                  <Link href={`/characters/${c.id}`}>
+                    <button className="btn-secondary card-button" type="button">
+                      Open Sheet
+                    </button>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="dashboard-section">

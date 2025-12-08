@@ -1,16 +1,17 @@
-"use client";
+﻿"use client";
 
+import { useState, type React } from "react";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-import { characters as seedCharacters } from "@/lib/data";
-import type { Character } from "@/lib/data";
-import { loadCharactersFromStorage, saveCharactersToStorage } from "@/lib/storage";
 
 type CharacterDraft = {
   name: string;
   ancestry: string;
   klass: string;
   level: string;
+  hp: string;
+  ac: string;
+  speed: string;
+  notes: string;
 };
 
 const initialDraft: CharacterDraft = {
@@ -18,54 +19,79 @@ const initialDraft: CharacterDraft = {
   ancestry: "",
   klass: "",
   level: "1",
+  hp: "10 / 10",
+  ac: "10",
+  speed: "30 ft",
+  notes: "",
 };
+
+function buildSubtitle(draft: CharacterDraft) {
+  const subtitleParts = [];
+  if (draft.ancestry) subtitleParts.push(draft.ancestry);
+  if (draft.klass) subtitleParts.push(draft.klass);
+  const base = subtitleParts.join(" ").trim();
+  const levelText = `Level ${draft.level || "1"}`;
+  return base ? `${base} • ${levelText}` : levelText;
+}
 
 export default function NewCharacterPage() {
   const [draft, setDraft] = useState<CharacterDraft>(initialDraft);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   function update<K extends keyof CharacterDraft>(key: K, value: CharacterDraft[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
   }
 
-  function buildNewCharacter(): Character {
-    const id = Date.now().toString();
-    const subtitleParts = [];
-    if (draft.ancestry) subtitleParts.push(draft.ancestry);
-    if (draft.klass) subtitleParts.push(draft.klass);
-    const subtitle =
-      subtitleParts.length > 0
-        ? `${subtitleParts.join(" ")} • Level ${draft.level || "1"}`
-        : `Level ${draft.level || "1"}`;
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    return {
-      id,
+    const level = draft.level || "1";
+    const parts: string[] = [];
+    if (draft.ancestry) parts.push(draft.ancestry);
+    if (draft.klass) parts.push(draft.klass);
+    const subtitle = parts.length > 0 ? `${parts.join(" ")} • Level ${level}` : `Level ${level}`;
+
+    const payload = {
       name: draft.name || "Unnamed Hero",
       subtitle,
       hp: "10 / 10",
       ac: 10,
       speed: "30 ft",
-      stats: {
-        STR: 10,
-        DEX: 10,
-        CON: 10,
-        INT: 10,
-        WIS: 10,
-        CHA: 10,
-      },
-      features: [],
-      inventory: [],
       notes: "",
     };
-  }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const existing = loadCharactersFromStorage() ?? seedCharacters;
-    const newChar = buildNewCharacter();
-    const updated = [...existing, newChar];
-    saveCharactersToStorage(updated);
-    router.push("/dashboard");
+    try {
+      const res = await fetch("/api/characters", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to create character", await res.text());
+        setIsSubmitting(false);
+        return;
+      }
+
+      const data = await res.json();
+      const created = data.character;
+
+      // Option A: go back to dashboard
+      // router.push("/dashboard");
+
+      // Option B: go straight to the new sheet (if you wire it later)
+      // router.push(`/characters/${created.id}`);
+
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Error creating character", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -88,6 +114,7 @@ export default function NewCharacterPage() {
               value={draft.name}
               onChange={(e) => update("name", e.target.value)}
               placeholder="Elira Dawnwhisper"
+              required
             />
           </label>
 
@@ -127,21 +154,63 @@ export default function NewCharacterPage() {
             </label>
           </div>
 
+          <div className="character-new-row">
+            <label className="character-new-label">
+              <span>HP</span>
+              <input
+                className="character-new-input"
+                type="text"
+                value={draft.hp}
+                onChange={(e) => update("hp", e.target.value)}
+                placeholder="38 / 38"
+              />
+            </label>
+
+            <label className="character-new-label">
+              <span>Armor Class</span>
+              <input
+                className="character-new-input"
+                type="number"
+                min={0}
+                value={draft.ac}
+                onChange={(e) => update("ac", e.target.value)}
+                placeholder="15"
+              />
+            </label>
+
+            <label className="character-new-label">
+              <span>Speed</span>
+              <input
+                className="character-new-input"
+                type="text"
+                value={draft.speed}
+                onChange={(e) => update("speed", e.target.value)}
+                placeholder="30 ft"
+              />
+            </label>
+          </div>
+
           <label className="character-new-label">
             <span>Concept Notes</span>
             <textarea
               className="character-new-notes"
               rows={4}
+              value={draft.notes}
+              onChange={(e) => update("notes", e.target.value)}
               placeholder="Who are they? What are they running from? What do they want?"
             />
           </label>
 
           <footer className="character-new-footer">
-            <button type="button" className="btn-secondary character-new-btn" onClick={() => router.push("/dashboard")}>
+            <button
+              type="button"
+              className="btn-secondary character-new-btn"
+              onClick={() => router.push("/dashboard")}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn-primary character-new-btn">
-              Create Character
+            <button type="submit" className="btn-primary character-new-btn" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Character"}
             </button>
           </footer>
         </form>
@@ -153,10 +222,11 @@ export default function NewCharacterPage() {
           <div className="character-new-avatar" />
           <div className="character-new-meta">
             <h3>{draft.name || "Unnamed Hero"}</h3>
+            <p className="character-new-line">{buildSubtitle(draft)}</p>
             <p className="character-new-line">
-              {draft.ancestry || "Ancestry"} {draft.klass ? `• ${draft.klass}` : "• Class"}
+              {draft.hp || "HP 10 / 10"} • AC {draft.ac || "10"}
             </p>
-            <p className="character-new-line">Level {draft.level || "1"}</p>
+            <p className="character-new-line">{draft.speed || "30 ft"}</p>
           </div>
         </div>
         <p className="character-new-help">
@@ -166,3 +236,5 @@ export default function NewCharacterPage() {
     </div>
   );
 }
+
+
