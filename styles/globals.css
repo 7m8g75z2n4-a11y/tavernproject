@@ -549,35 +549,55 @@ button {
 
 .dashboard-tabs {
   display: inline-flex;
-  align-self: flex-start;
-  padding: 0.3rem;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem;
   border-radius: 999px;
-  background: rgba(9, 5, 4, 0.8);
-  border: 1px solid rgba(255, 243, 209, 0.15);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .dashboard-tab {
   border: none;
   background: transparent;
-  padding: 0.45rem 1.3rem;
+  color: rgba(248, 242, 231, 0.65);
+  font-size: 0.9rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tavern-text-muted);
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.dashboard-tab:hover {
+  color: #f8f2e7;
+  transform: translateY(-1px);
 }
 
 .dashboard-tab--active {
-  background: radial-gradient(circle at top, #f8b133 0, #b66b1d 70%);
-  color: #231108;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(255, 184, 94, 0.85),
+    rgba(138, 74, 28, 0.95)
+  );
+  color: #1b1009;
+  box-shadow: 0 0 12px rgba(255, 184, 94, 0.5);
 }
 
 .dashboard-content {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
   gap: 1.8rem;
+}
+
+.dashboard-empty {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  padding: 1rem 0;
+}
+
+.dashboard-settings {
+  padding: 1rem 0;
+  font-size: 0.95rem;
+  opacity: 0.85;
 }
 
 .dashboard-section {
