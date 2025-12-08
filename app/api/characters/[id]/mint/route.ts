@@ -1,45 +1,30 @@
 // app/api/characters/[id]/mint/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-type MintRouteContext = {
-  params: {
-    id: string;
-  };
-};
-
-export async function GET(req: NextRequest, { params }: MintRouteContext) {
-  const { id } = params;
+export async function GET(request: Request, context: any) {
+  const id = context?.params?.id as string | undefined;
 
   return NextResponse.json(
     {
       ok: true,
+      method: "GET",
+      characterId: id ?? null,
       message: "Mint GET endpoint reached.",
-      characterId: id,
     },
     { status: 200 }
   );
 }
 
-export async function POST(req: NextRequest, { params }: MintRouteContext) {
-  const { id } = params;
+export async function POST(request: Request, context: any) {
+  const id = context?.params?.id as string | undefined;
 
-  try {
-    return NextResponse.json(
-      {
-        ok: true,
-        message: "Mint POST endpoint reached.",
-        characterId: id,
-      },
-      { status: 200 }
-    );
-  } catch (err) {
-    console.error("[mint] error", err);
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "Mint failed on the server.",
-      },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    {
+      ok: true,
+      method: "POST",
+      characterId: id ?? null,
+      message: "Mint POST endpoint reached.",
+    },
+    { status: 200 }
+  );
 }
