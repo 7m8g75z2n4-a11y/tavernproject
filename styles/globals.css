@@ -53,17 +53,22 @@ button {
 .tavern-header {
   padding: 20px 28px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   background: linear-gradient(180deg, rgba(245, 199, 106, 0.08), transparent);
 }
 
-.tavern-logo {
-  font-family: var(--font-heading);
-  letter-spacing: 0.28em;
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  color: var(--tavern-gold);
+.tavern-logo-link {
+  display: inline-block;
+}
+
+.tavern-logo-img {
+  display: block;
+  height: auto;
+  max-height: 64px;
+  filter:
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 14px rgba(255, 185, 90, 0.4));
 }
 
 .tavern-main {
@@ -89,6 +94,16 @@ button {
   gap: 24px;
   align-items: center;
   text-align: center;
+}
+
+.landing-logo {
+  max-width: 220px;
+  width: 100%;
+  height: auto;
+  margin: 0 auto 6px;
+  filter:
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 14px rgba(255, 185, 90, 0.4));
 }
 
 .landing-heading h1 {

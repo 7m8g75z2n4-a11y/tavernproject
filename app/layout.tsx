@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import "../styles/globals.css";
 
 export const metadata = {
@@ -12,7 +13,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="tavern-body">
         <div className="tavern-frame">
           <header className="tavern-header">
-            <div className="tavern-logo">TAVERN</div>
+            <Link href="/" className="tavern-logo-link">
+              <img
+                src="/tavern-logo.png"
+                alt="Tavern Logo"
+                className="tavern-logo-img"
+                width={180}
+                height={60}
+              />
+            </Link>
           </header>
           <main className="tavern-main">{children}</main>
         </div>

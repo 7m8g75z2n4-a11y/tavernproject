@@ -5,6 +5,7 @@ export default function LandingPage() {
     <div className="landing">
       <div className="landing-content">
         <div className="landing-heading">
+          <img src="/tavern-logo.png" alt="Tavern logo" className="landing-logo" />
           <h1>TAVERN</h1>
           <p className="subtitle">Where your characters gather.</p>
         </div>
