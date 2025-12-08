@@ -1,32 +1,34 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Character } from "@prisma/client";
-import { campaigns } from "@/lib/data";
+import type { Character, Campaign } from "@prisma/client";
 
 type DashboardClientProps = {
   initialCharacters: Character[];
+  initialCampaigns: Campaign[];
 };
 
-export default function DashboardClient({ initialCharacters }: DashboardClientProps) {
+export default function DashboardClient({
+  initialCharacters,
+  initialCampaigns,
+}: DashboardClientProps) {
   const [characters] = useState<Character[]>(initialCharacters);
+  const [campaigns] = useState<Campaign[]>(initialCampaigns);
 
   return (
     <div className="dashboard">
+      {/* Tabs */}
       <nav className="dashboard-tabs">
-        <button className="dashboard-tab dashboard-tab--active" type="button">
+        <button className="dashboard-tab dashboard-tab--active">
           Characters
         </button>
-        <button className="dashboard-tab" type="button">
-          Campaigns
-        </button>
-        <button className="dashboard-tab" type="button">
-          Settings
-        </button>
+        <button className="dashboard-tab">Campaigns</button>
+        <button className="dashboard-tab">Settings</button>
       </nav>
 
       <div className="dashboard-content">
+        {/* Characters panel */}
         <section className="dashboard-section">
           <header className="dashboard-section-header">
             <div>
@@ -34,58 +36,80 @@ export default function DashboardClient({ initialCharacters }: DashboardClientPr
               <p>Bring your heroes back to the table anytime.</p>
             </div>
             <Link href="/characters/new">
-              <button className="btn-primary dashboard-section-cta" type="button">
+              <button className="btn-primary dashboard-section-cta">
                 + Add Character
               </button>
             </Link>
           </header>
 
-          {characters.length === 0 ? (
-            <p className="card-subtitle">No characters yet. Create your first hero to get started.</p>
-          ) : (
-            <div className="dashboard-grid">
-              {characters.map((c) => (
-                <article key={c.id} className="card parchment-card character-card">
-                  <div className="card-header">
-                    <h3>{c.name}</h3>
+          <div className="dashboard-grid">
+            {characters.map((c) => (
+              <article
+                key={c.id}
+                className="card parchment-card character-card"
+              >
+                <div className="card-header">
+                  <h3>{c.name}</h3>
+                  {c.subtitle && (
                     <p className="card-subtitle">{c.subtitle}</p>
-                  </div>
-                  <p className="card-meta">
-                    {c.hp ? `HP ${c.hp}` : null}
-                    {c.ac != null ? (c.hp ? " � " : "") + `AC ${c.ac}` : null}
-                  </p>
-                  <Link href={`/characters/${c.id}`}>
-                    <button className="btn-secondary card-button" type="button">
-                      Open Sheet
-                    </button>
-                  </Link>
-                </article>
-              ))}
-            </div>
-          )}
+                  )}
+                </div>
+                <p className="card-meta">
+                  {c.hp ? `HP ${c.hp}` : "HP —"}
+                  {c.ac != null ? ` • AC ${c.ac}` : ""}
+                </p>
+                <Link href={`/characters/${c.id}`}>
+                  <button className="btn-secondary card-button">
+                    Open Sheet
+                  </button>
+                </Link>
+              </article>
+            ))}
+          </div>
         </section>
 
+        {/* Campaigns panel */}
         <section className="dashboard-section">
           <header className="dashboard-section-header">
             <div>
               <h2>Your Campaigns</h2>
               <p>Step back into the stories you&apos;re telling.</p>
             </div>
-            <button className="btn-secondary dashboard-section-cta" type="button">
-              Host a Campaign
-            </button>
+            <Link href="/campaigns/new">
+              <button className="btn-secondary dashboard-section-cta">
+                Host a Campaign
+              </button>
+            </Link>
           </header>
 
           <div className="dashboard-grid">
+            {campaigns.length === 0 && (
+              <p className="dashboard-empty">
+                You don&apos;t have any campaigns yet. Host one to begin.
+              </p>
+            )}
+
             {campaigns.map((c) => (
-              <article key={c.id} className="card parchment-card campaign-card">
+              <article
+                key={c.id}
+                className="card parchment-card campaign-card"
+              >
                 <div className="card-header">
                   <h3>{c.name}</h3>
-                  <p className="card-subtitle">{c.gm}</p>
+                  {c.gmName && (
+                    <p className="card-subtitle">GM {c.gmName}</p>
+                  )}
                 </div>
-                <p className="card-meta">Party size: {c.party.length}</p>
+                <p className="card-meta">
+                  Created{" "}
+                  {new Date(c.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
                 <Link href={`/campaigns/${c.id}`}>
-                  <button className="btn-secondary card-button" type="button">
+                  <button className="btn-secondary card-button">
                     Open Campaign
                   </button>
                 </Link>
@@ -97,3 +121,5 @@ export default function DashboardClient({ initialCharacters }: DashboardClientPr
     </div>
   );
 }
+
+

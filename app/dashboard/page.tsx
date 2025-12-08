@@ -11,10 +11,19 @@ export default async function DashboardPage() {
     redirect("/auth");
   }
 
-  const characters = await prisma.character.findMany({
-    orderBy: { createdAt: "desc" },
-    // Later we can filter by session.user.email, etc.
-  });
+  const email = session.user?.email ?? null;
 
-  return <DashboardClient initialCharacters={characters} />;
+  const [characters, campaigns] = await Promise.all([
+    prisma.character.findMany({
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.campaign.findMany({
+      where: email ? { ownerEmail: email } : undefined,
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  return (
+    <DashboardClient initialCharacters={characters} initialCampaigns={campaigns} />
+  );
 }
