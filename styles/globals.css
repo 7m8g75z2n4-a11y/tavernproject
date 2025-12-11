@@ -997,6 +997,81 @@ button {
   padding-inline: 1.2rem;
 }
 
+.session-new-layout {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.session-new-card {
+  padding: 2rem;
+}
+
+.session-new-header h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.session-new-header p {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-bottom: 1.5rem;
+}
+
+.session-new-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.session-new-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.session-new-input,
+.session-new-notes {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.2);
+  color: #f8f2e7;
+}
+
+.session-new-input::placeholder,
+.session-new-notes::placeholder {
+  color: rgba(248, 242, 231, 0.6);
+}
+
+.session-new-notes {
+  resize: vertical;
+}
+
+.session-new-meta {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.session-new-meta-pill {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.session-new-error {
+  font-size: 0.85rem;
+  color: #f8b4b4;
+}
+
+.session-new-footer {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
 .campaign-new-layout {
   max-width: 720px;
   margin: 0 auto;
@@ -1273,6 +1348,89 @@ button {
   opacity: 0.9;
 }
 
+.campaign-section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.campaign-section-cta {
+  font-size: 0.8rem;
+  padding-inline: 0.9rem;
+}
+
+/* Campaign detail */
+.campaign-detail {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 2vw, 2rem) 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.campaign-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.campaign-detail__title h1 {
+  margin: 0.15rem 0 0.3rem;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.campaign-detail__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.campaign-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.campaign-detail__card {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.campaign-detail__list {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.campaign-detail__list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.8rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.campaign-detail__list-item .list-title {
+  font-weight: 600;
+}
+
+.campaign-detail__list-item .list-meta {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
 .campaign-side {
   display: flex;
   flex-direction: column;
@@ -1298,6 +1456,38 @@ button {
   font-size: 0.85rem;
   opacity: 0.85;
   text-align: center;
+}
+
+.campaign-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.campaign-session-item {
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.8rem;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.campaign-session-main h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.1rem;
+}
+
+.campaign-session-meta {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.campaign-session-button {
+  font-size: 0.8rem;
+  padding-inline: 0.9rem;
 }
 @media (max-width: 800px) {
   .tavern-main {
@@ -1353,4 +1543,154 @@ button {
   .campaign-layout {
     grid-template-columns: 1fr;
   }
+}
+.campaign-party-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.campaign-party-item {
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.8rem;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.campaign-party-main h3 {
+  font-size: 0.95rem;
+  margin-bottom: 0.1rem;
+}
+
+.campaign-party-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.campaign-party-button {
+  font-size: 0.8rem;
+  padding-inline: 0.9rem;
+}
+
+.campaign-party-add {
+  margin-top: 0.75rem;
+}
+
+.campaign-party-select-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.campaign-party-select-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.campaign-party-select {
+  flex: 1;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.25);
+  color: #f8f2e7;
+}
+
+.campaign-party-select option {
+  color: #1b1009;
+}
+
+.campaign-party-add-button {
+  font-size: 0.8rem;
+  padding-inline: 0.9rem;
+}
+
+.campaign-party-error {
+  font-size: 0.8rem;
+  color: #f8b4b4;
+  margin-top: 0.3rem;
+}
+
+.character-new-error {
+  font-size: 0.85rem;
+  color: #b23b3b;
+  margin: 0.2rem 0 0;
+}
+
+.character-back-link,
+.campaign-back-link,
+.session-back-link {
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.character-back-link a,
+.campaign-back-link a,
+.session-back-link a {
+  color: rgba(27, 16, 11, 0.75);
+}
+
+.character-tab-body {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.character-stats-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.character-notes-body {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.session-sheet {
+  background: radial-gradient(circle at top, #f3e0c0 0, #cda777 65%, #b89265 100%);
+  border-radius: 26px;
+  padding: 1.6rem 1.8rem 1.9rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  color: #2a1911;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.session-sheet-header h1 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+}
+
+.session-sheet-meta {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.session-notes-body {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.campaign-section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.campaign-section-cta {
+  font-size: 0.8rem;
+  padding-inline: 0.9rem;
 }

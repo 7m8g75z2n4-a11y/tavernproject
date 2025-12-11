@@ -4,29 +4,227 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Character {
-  id        String   @id @default(cuid())
-  name      String
-  subtitle  String?
-  hp        String?
-  ac        Int?
-  speed     String?
-  notes     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Campaign {
   id         String   @id @default(cuid())
   name       String
-  gmName     String?
+  subtitle   String?
+  class      String?
+  level      Int      @default(1)
+  avatarUrl  String?
+  coreJson   Json?
+  appearanceJson Json?
+  isArchived Boolean  @default(false)
+  archivedAt  DateTime?
+  hp         String?
+  ac         Int?
+  speed      String?
+  notes      String?
   ownerEmail String?
+  createdById String?
+  createdBy  User?    @relation(fields: [createdById], references: [id])
+
+  partyMembers PartyMember[]
+  downtimeActivities DowntimeActivity[]
+  sessionEvents SessionEvent[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaigns    Campaign[]
+  characters   Character[]
+  campaignPlayers PartyMember[]
+  passwordResetTokens PasswordResetToken[]
+  campaignInvites CampaignInvite[]
+}
+
+model Campaign {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  system      String?
+  gmName      String?
+  ownerEmail  String?
+  createdById String?
+  createdBy   User?     @relation(fields: [createdById], references: [id])
+
+  sessions     Session[]
+  partyMembers PartyMember[]
+  npcs         NPC[]
+  quests       Quest[]
+  gmNotes      GMNote[]
+  downtimeActivities DowntimeActivity[]
+  invites      CampaignInvite[]
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  title       String
+  date        DateTime  @default(now())
+  sessionDate DateTime?
+  summary     String?
+  notes       String?
+  ownerEmail  String?
+  isActive    Boolean   @default(true)
+
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  events      SessionEvent[]
+  gmNotes     GMNote[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PartyMember {
+  id          String    @id @default(cuid())
+  ownerEmail  String?
+  userId      String?
+
+  campaignId  String
+  campaign    Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+}
+
+model NPC {
+  id          String   @id @default(cuid())
+  name        String
+  role        String?
+  description String?
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId  String
+
+  notes GMNote[]
+  sessionEvents SessionEvent[]
+}
+
+enum QuestStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  FAILED
+}
+
+model Quest {
+  id          String      @id @default(cuid())
+  title       String
+  summary     String?
+  status      QuestStatus @default(PLANNED)
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId  String
+
+  notes GMNote[]
+  sessionEvents SessionEvent[]
+}
+
+model GMNote {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  campaign  Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+  session   Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String?
+  npc       NPC?     @relation(fields: [npcId], references: [id], onDelete: Cascade)
+  npcId     String?
+  quest     Quest?   @relation(fields: [questId], references: [id], onDelete: Cascade)
+  questId   String?
+  createdAt DateTime @default(now())
+}
+
+enum DowntimeStatus {
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model DowntimeActivity {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  status      DowntimeStatus @default(ONGOING)
+  progress    Int            @default(0)
+  goal        Int?
+  campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId  String
+  character   Character      @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  characterId String
+
+  sessionEvents SessionEvent[]
+}
+
+model SessionEvent {
+  id                 String    @id @default(cuid())
+  session            Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId          String
+  type               SessionEventType
+  message            String
+  data               Json?
+  characterId        String?
+  character          Character?        @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  npcId              String?
+  npc                NPC?              @relation(fields: [npcId], references: [id], onDelete: Cascade)
+  questId            String?
+  quest              Quest?            @relation(fields: [questId], references: [id], onDelete: Cascade)
+  downtimeActivityId String?
+  downtimeActivity   DowntimeActivity? @relation(fields: [downtimeActivityId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+}
+
+enum SessionEventType {
+  hp_change
+  xp_change
+  xp_gain
+  note
+  loot
+  condition_add
+  condition_remove
+  quest_update
+  downtime_start
+  downtime_advance
+  downtime_complete
+  downtime_cancel
+}
+
+model CampaignInvite {
+  id          String    @id @default(cuid())
+  campaignId  String
+  campaign    Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  token       String    @unique
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  expiresAt   DateTime?
+  maxUses     Int?
+  usedCount   Int       @default(0)
+  isRevoked   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
 }

@@ -4,9 +4,19 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Character, Campaign } from "@prisma/client";
 
+type Counts = {
+  characters: number;
+  campaigns: number;
+  sessions: number;
+};
+
+type CampaignWithCounts = Campaign & { _count?: { sessions: number } };
+
 type DashboardClientProps = {
   initialCharacters: Character[];
-  initialCampaigns: Campaign[];
+  initialCampaigns: CampaignWithCounts[];
+  counts: Counts;
+  userEmail: string;
 };
 
 type TabId = "characters" | "campaigns" | "settings";
@@ -14,9 +24,11 @@ type TabId = "characters" | "campaigns" | "settings";
 export default function DashboardClient({
   initialCharacters,
   initialCampaigns,
+  counts,
+  userEmail,
 }: DashboardClientProps) {
   const [characters] = useState<Character[]>(initialCharacters);
-  const [campaigns] = useState<Campaign[]>(initialCampaigns);
+  const [campaigns] = useState<CampaignWithCounts[]>(initialCampaigns);
   const [activeTab, setActiveTab] = useState<TabId>("characters");
 
   return (
@@ -73,7 +85,7 @@ export default function DashboardClient({
 
             {characters.length === 0 ? (
               <p className="dashboard-empty">
-                You don&apos;t have any characters yet. Create one to begin.
+                You don't have any characters yet. Create one to begin.
               </p>
             ) : (
               <div className="dashboard-grid">
@@ -89,8 +101,8 @@ export default function DashboardClient({
                       )}
                     </div>
                     <p className="card-meta">
-                      {c.hp ? `HP ${c.hp}` : "HP —"}
-                      {c.ac != null ? ` • AC ${c.ac}` : ""}
+                      {c.hp ? `HP ${c.hp}` : "HP -"}
+                      {c.ac != null ? ` \u2022 AC ${c.ac}` : ""}
                     </p>
                     <Link href={`/characters/${c.id}`}>
                       <button className="btn-secondary card-button">
@@ -110,18 +122,25 @@ export default function DashboardClient({
             <header className="dashboard-section-header">
               <div>
                 <h2>Your Campaigns</h2>
-                <p>Step back into the stories you&apos;re telling.</p>
+                <p>Step back into the stories you're telling.</p>
               </div>
-              <Link href="/campaigns/new">
-                <button className="btn-secondary dashboard-section-cta">
-                  Host a Campaign
-                </button>
-              </Link>
+              <div className="dashboard-section-actions">
+                <Link href="/sessions">
+                  <button className="btn-secondary dashboard-section-cta">
+                    Sessions Dashboard
+                  </button>
+                </Link>
+                <Link href="/campaigns/new">
+                  <button className="btn-secondary dashboard-section-cta">
+                    Host a Campaign
+                  </button>
+                </Link>
+              </div>
             </header>
 
             {campaigns.length === 0 ? (
               <p className="dashboard-empty">
-                You haven&apos;t hosted any campaigns yet. Start one to gather
+                You haven't hosted any campaigns yet. Start one to gather
                 your party.
               </p>
             ) : (
@@ -133,12 +152,15 @@ export default function DashboardClient({
                   >
                     <div className="card-header">
                       <h3>{c.name}</h3>
-                      {c.gmName && (
-                        <p className="card-subtitle">GM {c.gmName}</p>
-                      )}
+                      <p className="card-subtitle">
+                        {c.gmName ? `GM ${c.gmName}` : "GM not set"}
+                      </p>
                     </div>
                     <p className="card-meta">
-                      Created{" "}
+                      {`GM ${c.gmName || "Unknown"} \u2022 ${c._count?.sessions ?? 0} session(s)`}
+                    </p>
+                    <p className="card-meta">
+                      Created {""}
                       {new Date(c.createdAt).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -157,7 +179,7 @@ export default function DashboardClient({
           </section>
         )}
 
-        {/* SETTINGS TAB (placeholder for now) */}
+        {/* SETTINGS TAB */}
         {activeTab === "settings" && (
           <section className="dashboard-section">
             <header className="dashboard-section-header">
@@ -168,9 +190,9 @@ export default function DashboardClient({
             </header>
 
             <div className="dashboard-settings">
+              <p>Signed in as {userEmail}</p>
               <p>
-                Settings are coming soon. Here you&apos;ll manage your profile,
-                preferences, and table rules.
+                Characters: {counts.characters} \u2022 Campaigns: {counts.campaigns} \u2022 Sessions: {counts.sessions}
               </p>
             </div>
           </section>
@@ -179,5 +201,3 @@ export default function DashboardClient({
     </div>
   );
 }
-
-

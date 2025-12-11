@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "set NEXT_SKIP_TURBOPACK=1&& set NEXT_DISABLE_SOURCEMAP=1&& next dev --webpack",
     "dev:turbo": "next dev --turbo",
-    "dev:webpack": "set NEXT_SKIP_TURBOPACK=1&& next dev",
+    "dev:webpack": "set NEXT_SKIP_TURBOPACK=1&& set NEXT_DISABLE_SOURCEMAP=1&& next dev --webpack",
     "build": "next build",
     "start": "next start",
     "prisma:generate": "prisma generate",
@@ -22,22 +22,22 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "hardhat": "^2.26.1",
-    "prisma": "^6.15.0"
+    "prisma": "^6.19.0"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0",
-    "@prisma/client": "^6.15.0",
+    "@prisma/client": "^6.19.0",
     "@rainbow-me/rainbowkit": "^2.2.9",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@tanstack/react-query": "^5.90.12",
-    "ethers": "^6.16.0",
+    "bcryptjs": "^3.0.3",
     "next": "^16.0.7",
+    "next-auth": "^4.24.13",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "three": "^0.181.2",
     "viem": "^2.41.2",
-    "wagmi": "^2.19.5",
-    "web3.storage": "^4.5.5"
+    "wagmi": "^2.19.5"
   }
 }

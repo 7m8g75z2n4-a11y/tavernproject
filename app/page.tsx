@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function LandingPage() {
@@ -5,7 +6,14 @@ export default function LandingPage() {
     <div className="landing">
       <div className="landing-content">
         <div className="landing-heading">
-          <img src="/tavern-logo.png" alt="Tavern logo" className="landing-logo" />
+          <Image
+            src="/tavern-logo.png"
+            alt="Tavern logo"
+            className="landing-logo"
+            width={360}
+            height={120}
+            priority
+          />
           <h1>TAVERN</h1>
           <p className="subtitle">Where your characters gather.</p>
         </div>
@@ -22,7 +30,7 @@ export default function LandingPage() {
               across campaigns.
             </p>
             <div className="landing-actions">
-              <Link href="/auth">
+              <Link href="/register">
                 <button className="btn-primary" type="button">
                   Create Account
                 </button>

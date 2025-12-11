@@ -1,34 +1,49 @@
-"use client";
+﻿"use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { signIn } from "next-auth/react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export default function AuthPage() {
-  const [email, setEmail] = useState("");
   const router = useRouter();
-
-  useEffect(() => {
-    router.prefetch("/dashboard");
-  }, [router]);
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (isSubmitting) return;
 
-    await signIn("credentials", {
-      email,
-      redirect: true,
-      callbackUrl: "/dashboard",
-    });
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      if (result?.error) {
+        setError("Sign-in failed. Please try a different email.");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Sign-in error", err);
+      setError("Unexpected error during sign-in.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
-    <div className="auth">
+    <div className="auth-layout">
       <div className="auth-panel">
         <section className="auth-section auth-create">
           <h1 className="auth-title">TAVERN</h1>
-          <h2 className="auth-heading">Create Account</h2>
+          <h2 className="auth-heading">Enter the Tavern</h2>
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="auth-label">
               <span>Email</span>
@@ -41,8 +56,9 @@ export default function AuthPage() {
                 placeholder="you@example.com"
               />
             </label>
-            <button type="submit" className="btn-primary auth-submit">
-              Enter Tavern
+            {error && <p className="auth-footnote">{error}</p>}
+            <button type="submit" className="btn-primary auth-submit" disabled={isSubmitting}>
+              {isSubmitting ? "Entering..." : "Enter Tavern"}
             </button>
           </form>
         </section>
@@ -64,19 +80,15 @@ export default function AuthPage() {
                 placeholder="you@example.com"
               />
             </label>
-            <button type="submit" className="btn-secondary auth-submit auth-google">
+            {error && <p className="auth-footnote">{error}</p>}
+            <button type="submit" className="btn-secondary auth-submit auth-google" disabled={isSubmitting}>
               <span className="auth-google-icon" />
-              Continue with Email
+              {isSubmitting ? "Signing in..." : "Continue with Email"}
             </button>
           </form>
           <p className="auth-footnote">
             The Tavern keeps your characters safe and your stories yours.
           </p>
-          <Link href="/dashboard">
-            <button type="button" className="btn-secondary auth-submit">
-              Explore Tavern (Demo)
-            </button>
-          </Link>
         </section>
       </div>
       <div className="auth-lantern" />

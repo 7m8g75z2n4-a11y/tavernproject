@@ -2,31 +2,27 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
 
 async function createCampaign(formData: FormData) {
   "use server";
+
+  const user = await getCurrentUser();
+  const email = user?.email;
+
+  if (!email) redirect("/auth");
 
   const name = formData.get("name")?.toString().trim();
   const description = formData.get("description")?.toString().trim() || "";
 
   if (!name) redirect("/campaigns");
 
-  // demo GM user
-  let user = await prisma.user.findFirst();
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        authUserId: "demo-user",
-        displayName: "Demo GM",
-      },
-    });
-  }
-
   const campaign = await prisma.campaign.create({
     data: {
       name,
       description,
-      gmId: user.id,
+      ownerEmail: email,
+      createdById: user?.id,
     },
   });
 
@@ -35,9 +31,15 @@ async function createCampaign(formData: FormData) {
 }
 
 export default async function CampaignsPage() {
+  const user = await getCurrentUser();
+  const email = user?.email;
+
+  if (!email || !user?.id) redirect("/login");
+
   const campaigns = await prisma.campaign.findMany({
+    where: { OR: [{ ownerEmail: email }, { createdById: user.id }] },
     orderBy: { createdAt: "desc" },
-    include: { gm: true },
+    include: { _count: { select: { sessions: true } } },
   });
 
   return (
@@ -62,9 +64,7 @@ export default async function CampaignsPage() {
                   {c.description}
                 </div>
               )}
-              <div className="text-[10px] opacity-60 mt-1">
-                GM: {c.gm?.displayName ?? "Demo GM"}
-              </div>
+              <div className="text-[10px] opacity-60 mt-1">GM: {c.gmName ?? "Unknown"}</div>
             </Link>
           ))}
         </div>
