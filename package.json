@@ -4,17 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "set NEXT_SKIP_TURBOPACK=1&& set NEXT_DISABLE_SOURCEMAP=1&& next dev --webpack",
-    "dev:turbo": "next dev --turbo",
-    "dev:webpack": "set NEXT_SKIP_TURBOPACK=1&& set NEXT_DISABLE_SOURCEMAP=1&& next dev --webpack",
-    "build": "next build",
+    "dev": "next dev",
+    "build": "prisma migrate deploy && prisma generate && next build --webpack",
     "start": "next start",
-    "prisma:generate": "prisma generate",
-    "test": "hardhat test",
-    "deploy": "hardhat run scripts/deploy.js",
-    "deploy:badges": "hardhat run scripts/deployBadges.js",
-    "deploy:network": "hardhat run --network NETWORK_NAME scripts/deploy.js",
-    "deploy:badges:network": "hardhat run --network NETWORK_NAME scripts/deployBadges.js"
+    "prisma:generate": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -27,17 +20,14 @@
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0",
     "@prisma/client": "^6.19.0",
-    "@rainbow-me/rainbowkit": "^2.2.9",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
-    "@tanstack/react-query": "^5.90.12",
     "bcryptjs": "^3.0.3",
+    "date-fns": "^4.1.0",
     "next": "^16.0.7",
     "next-auth": "^4.24.13",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "three": "^0.181.2",
-    "viem": "^2.41.2",
-    "wagmi": "^2.19.5"
+    "three": "^0.181.2"
   }
 }
