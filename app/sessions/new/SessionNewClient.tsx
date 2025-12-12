@@ -58,7 +58,7 @@ export default function SessionNewClient() {
 
     setError(null);
     if (!campaignId) {
-      setError("This page needs a campaignId – open it from a campaign.");
+      setError("This page needs a campaignId - open it from a campaign.");
       return;
     }
 
@@ -149,7 +149,7 @@ export default function SessionNewClient() {
               )}
               {!isLoadingCampaigns && campaigns.length === 0 && (
                 <p className="session-new-meta">
-                  This page needs a campaignId – open it from a campaign.
+                  This page needs a campaignId - open it from a campaign.
                 </p>
               )}
             </label>

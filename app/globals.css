@@ -1,4 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
+  --background: 222 47% 6%;
+  --foreground: 210 40% 98%;
+
+  --card: 222 47% 8%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 8%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 38 92% 55%;
+  --primary-foreground: 222 47% 10%;
+
+  --secondary: 215 25% 16%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 215 25% 14%;
+  --muted-foreground: 215 20% 70%;
+
+  --accent: 38 92% 55%;
+  --accent-foreground: 222 47% 10%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 215 25% 18%;
+  --input: 215 25% 18%;
+  --ring: 38 92% 55%;
+
+  --radius: 1rem;
+
   --tavern-bg: #0d0a12;
   --tavern-panel: #1c1410;
   --tavern-panel-light: #241815;
@@ -15,17 +48,220 @@
   --font-body: "Libre Baskerville", "Times New Roman", serif;
 }
 
+@layer base {
+  html {
+    min-height: 100%;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-body);
+    line-height: 1.5;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
 
-body {
+.page-shell {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 3rem 1rem 3.5rem;
+}
+
+.page-shell__inner {
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 1rem;
+}
+
+.page-shell__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.page-shell__header h1 {
+  font-size: clamp(2rem, 3vw, 2.6rem);
   margin: 0;
-  min-height: 100vh;
-  background: radial-gradient(ellipse at top, #1f1620 0%, #0f0b14 45%, #05040a 100%);
-  color: var(--tavern-text-main);
-  font-family: var(--font-body);
-  line-height: 1.5;
+}
+
+.page-shell__subtitle {
+  color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+  margin: 0;
+}
+
+.page-shell__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.card {
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.card-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.card-subtitle {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.95rem;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.65rem 1.6rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 20px 30px rgba(255, 190, 90, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+.btn-destructive {
+  background: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-row label {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.form-row input,
+.form-row textarea,
+.form-row select {
+  background: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.9rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 1rem;
+}
+
+.form-row small {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.hero {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  align-items: center;
+}
+
+.hero-card {
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45);
+  border: 1px solid hsl(var(--border));
+}
+
+.hero-card h2 {
+  margin-top: 0;
+  font-size: clamp(1.4rem, 2vw, 1.8rem);
+}
+
+.hero-meta {
+  color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.hero-illustration {
+  width: 100%;
+  min-height: 200px;
+  border-radius: 1.25rem;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.1), transparent 70%),
+    linear-gradient(135deg, rgba(38, 92, 55, 0.25), rgba(0, 0, 0, 0.7));
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .page-shell {
+    padding: 2rem 1rem 2.5rem;
+  }
 }
 
 a {

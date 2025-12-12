@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 type RouteContext = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export async function POST(req: Request, context: RouteContext) {
@@ -18,7 +18,7 @@ export async function POST(req: Request, context: RouteContext) {
     );
   }
 
-  const campaignId = context.params.id;
+  const { id: campaignId } = await context.params;
 
   const body = (await req.json().catch(() => ({}))) as {
     characterId?: string;

@@ -1,7 +1,14 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { PageShell, SectionGroup } from "@/components/ui/Page";
+import { SectionHeader } from "@/components/ui/Section";
+import { TavernCard } from "@/components/ui/TavernCard";
+import { TavernButton } from "@/components/ui/TavernButton";
+import { TavernBadge } from "@/components/ui/TavernBadge";
+import { StatPill } from "@/components/ui/StatPill";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 type PlayerCampaignRow = {
   campaignId: string;
@@ -53,103 +60,81 @@ export default async function PlayPage() {
       characterId: m.characterId,
       characterName: m.character?.name ?? "Character",
       system: (m.character as any)?.system ?? null,
-      className: m.character?.class ?? null,
-      level: m.character?.level ?? null,
+      className: (m.character as any)?.class ?? null,
+      level: (m.character as any)?.level ?? null,
       hp: (m as any).hpCurrent ?? null,
       xp: (m as any).xp ?? null,
       conditions: (m as any).conditions ?? null,
     };
   });
 
+  const sortedRows = [...rows].sort((a, b) => {
+    if (a.isActive === b.isActive) return 0;
+    return a.isActive ? -1 : 1;
+  });
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">My Table</h1>
-          <p className="text-sm text-slate-400">
-            Campaigns where you have a seat and the characters you bring.
-          </p>
-        </header>
+    <PageShell className="pt-6 pb-12">
+      <SectionHeader
+        title="My Table"
+        subtitle="Campaigns where you have a seat and the characters you bring."
+        actions={
+          <Link href="/campaigns">
+            <TavernButton variant="secondary">Browse campaigns</TavernButton>
+          </Link>
+        }
+      />
 
+      <SectionGroup>
         {rows.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 space-y-3">
-            <p className="text-sm text-slate-300">
-              You&apos;re not in any campaigns yet. Ask a GM to add one of your characters
-              to their party.
-            </p>
-            <Link
-              href="/campaigns"
-              className="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-500"
-            >
-              Browse Campaigns
-            </Link>
-          </div>
+          <EmptyState
+            title="No table yet"
+            body="You are not seated at any campaigns. Ask a GM to invite one of your characters."
+            cta={
+              <Link href="/campaigns">
+                <TavernButton variant="ghost">Find a campaign</TavernButton>
+              </Link>
+            }
+          />
         ) : (
-          <section className="space-y-3">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {rows.map((row) => (
-                <div
-                  key={`${row.campaignId}-${row.characterId}`}
-                  className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 space-y-3 shadow-lg shadow-black/30"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-amber-300">
-                        {row.campaignName}
-                      </p>
-                      <h3 className="text-lg font-semibold text-slate-50">
-                        {row.characterName}
-                      </h3>
-                      <p className="text-sm text-slate-400">
-                        {row.system ?? "System"} / {row.className ?? "Class"}
-                        {row.level ? ` / Lv ${row.level}` : ""}
-                      </p>
-                    </div>
-                    {row.lastSessionDate && (
-                      <span className="text-[11px] text-slate-500">
-                        Last session: {new Date(row.lastSessionDate).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 text-[11px]">
-                    <span className="rounded-full bg-slate-800 px-2 py-0.5 text-amber-200">
-                      HP {row.hp != null ? row.hp : "--"}
-                    </span>
-                    <span className="rounded-full bg-slate-800 px-2 py-0.5 text-amber-200">
-                      XP {row.xp != null ? row.xp : "--"}
-                    </span>
-                    {Array.isArray(row.conditions) &&
-                      row.conditions.map((c) => (
-                        <span
-                          key={c}
-                          className="rounded-full bg-slate-800 px-2 py-0.5 text-red-200"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                  </div>
-
-                  <div className="flex gap-2 text-sm">
-                    <Link
-                      href={`/characters/${row.characterId}`}
-                      className="flex-1 rounded-md border border-slate-700 px-3 py-2 text-center hover:border-amber-400"
-                    >
-                      Open Character
-                    </Link>
-                    <Link
-                      href={`/play/${row.campaignId}/${row.characterId}`}
-                      className="flex-1 rounded-md bg-amber-600 px-3 py-2 text-center font-semibold text-slate-950 hover:bg-amber-500"
-                    >
-                      Open player view
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          sortedRows.map((row) => (
+            <TavernCard
+              key={`${row.campaignId}-${row.characterId}`}
+              title={row.characterName}
+              subtitle={`${row.campaignName} · ${row.system ?? "System"}${
+                row.level ? ` · Lv ${row.level}` : ""
+              }`}
+              actions={
+                <>
+                  <Link href={`/characters/${row.characterId}`}>
+                    <TavernButton variant="secondary">Character</TavernButton>
+                  </Link>
+                  <Link href={`/play/${row.campaignId}/${row.characterId}`}>
+                    <TavernButton variant="primary">Open player view</TavernButton>
+                  </Link>
+                </>
+              }
+            >
+              <div className="flex flex-wrap gap-3">
+                <StatPill label="HP" value={row.hp ?? "--"} />
+                <StatPill label="XP" value={row.xp ?? "--"} />
+                {Array.isArray(row.conditions) &&
+                  row.conditions.map((condition) => (
+                    <TavernBadge key={condition} variant="muted">
+                      {condition}
+                    </TavernBadge>
+                  ))}
+              </div>
+              <p className="text-sm text-slate-400">
+                Last session:{" "}
+                {row.lastSessionDate
+                  ? new Date(row.lastSessionDate).toLocaleDateString()
+                  : "Not logged yet"}
+              </p>
+            </TavernCard>
+          ))
         )}
-      </main>
-    </div>
+      </SectionGroup>
+    </PageShell>
   );
 }

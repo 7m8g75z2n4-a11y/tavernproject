@@ -2,15 +2,26 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+type ResetPasswordPageParams = {
+  token?: string | string[] | undefined;
+};
+
+type ResetPasswordPageProps = {
+  params?: Promise<ResetPasswordPageParams>;
+  searchParams?: Promise<any>;
+};
+
 async function resetPassword(token: string, formData: FormData) {
   "use server";
   const password = formData.get("password")?.toString() ?? "";
   const confirm = formData.get("confirm")?.toString() ?? "";
-  if (!password || password !== confirm) return { error: "Passwords do not match." };
+  if (!password || password !== confirm) {
+    throw new Error("Passwords do not match.");
+  }
 
   const record = await prisma.passwordResetToken.findUnique({ where: { token } });
   if (!record || record.expiresAt < new Date()) {
-    return { error: "Reset link expired." };
+    throw new Error("Reset link expired.");
   }
 
   const hash = await bcrypt.hash(password, 10);
@@ -24,10 +35,19 @@ async function resetPassword(token: string, formData: FormData) {
 
 export default async function ResetPasswordPage({
   params,
-}: {
-  params: { token: string };
-}) {
-  const token = params.token;
+}: ResetPasswordPageProps) {
+  const resolvedParams = await params;
+  const rawToken = resolvedParams?.token;
+  const token =
+    typeof rawToken === "string"
+      ? rawToken
+      : Array.isArray(rawToken)
+      ? rawToken[0]
+      : undefined;
+
+  if (!token) {
+    redirect("/forgot-password");
+  }
   const record = await prisma.passwordResetToken.findUnique({ where: { token } });
   if (!record || record.expiresAt < new Date()) {
     redirect("/forgot-password");
@@ -35,7 +55,7 @@ export default async function ResetPasswordPage({
 
   async function action(formData: FormData) {
     "use server";
-    return resetPassword(token, formData);
+    await resetPassword(token, formData);
   }
 
   return (

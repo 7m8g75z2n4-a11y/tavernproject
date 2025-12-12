@@ -4,37 +4,28 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
-type PageProps = {
-  params: { id: string };
+type CampaignSessionsPageParams = {
+  id?: string | string[] | undefined;
 };
 
-export async function deleteSession(formData: FormData) {
-  "use server";
-  const user = await getCurrentUser();
-  if (!user) {
-    return notFound();
+type CampaignSessionsPageProps = {
+  params?: Promise<CampaignSessionsPageParams>;
+  searchParams?: Promise<any>;
+};
+
+export default async function CampaignSessionsPage({ params }: CampaignSessionsPageProps) {
+  const resolvedParams = await params;
+  const rawId = resolvedParams?.id;
+  const campaignId =
+    typeof rawId === "string"
+      ? rawId
+      : Array.isArray(rawId)
+      ? rawId[0]
+      : undefined;
+
+  if (!campaignId) {
+    notFound();
   }
-
-  const campaignId = formData.get("campaignId")?.toString();
-  const sessionId = formData.get("sessionId")?.toString();
-  if (!campaignId || !sessionId) return;
-
-  const session = await prisma.session.findFirst({
-    where: {
-      id: sessionId,
-      campaign: { id: campaignId, createdById: user.id ?? undefined },
-    },
-  });
-  if (!session) return;
-
-  await prisma.sessionEvent.deleteMany({ where: { sessionId } });
-  await prisma.session.delete({ where: { id: sessionId } });
-
-  revalidatePath(`/campaigns/${campaignId}/sessions`);
-  revalidatePath(`/campaigns/${campaignId}`);
-}
-
-export default async function CampaignSessionsPage({ params }: PageProps) {
   const user = await getCurrentUser();
   if (!user) {
     return notFound();
@@ -42,7 +33,7 @@ export default async function CampaignSessionsPage({ params }: PageProps) {
 
   const campaign = await prisma.campaign.findFirst({
     where: {
-      id: params.id,
+      id: campaignId,
       OR: [
         { createdById: user.id ?? undefined },
         { ownerEmail: user.email ?? undefined },
@@ -178,7 +169,7 @@ export default async function CampaignSessionsPage({ params }: PageProps) {
                           <ul className="space-y-0.5">
                             {lastEvents.map((e) => (
                               <li key={e.id} className="truncate">
-                                - {e.type} - {e.summary || (e as any).description || "event"}
+                            - {e.type} - {(e as any).summary || (e as any).description || "event"}
                               </li>
                             ))}
                           </ul>

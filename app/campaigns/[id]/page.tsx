@@ -6,6 +6,11 @@ import { revalidatePath } from "next/cache";
 import CampaignPageClient, { type CampaignWithRelations } from "./CampaignPageClient";
 import { getServerSession } from "next-auth";
 import { generateInviteToken } from "@/lib/invites";
+import Link from "next/link";
+import { PageShell, SectionGroup } from "@/components/ui/Page";
+import { SectionHeader } from "@/components/ui/Section";
+import { TavernButton } from "@/components/ui/TavernButton";
+
 
 type CampaignPageParams = {
   id?: string | string[] | undefined;
@@ -699,37 +704,60 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     (!campaign.createdById && !!campaign) ||
     (campaign.ownerEmail === email);
 
+  const sessionCount = campaign.sessions.length;
+  const partyCount = campaign.partyMembers.length;
+
   return (
-    <CampaignPageClient
-      campaign={campaignWithRelations}
-      deleteCampaign={deleteCampaign}
-      archiveCampaign={archiveCampaign}
-      restoreCampaign={restoreCampaign}
-      addCharacterToCampaign={addCharacterToCampaign}
-      availableCharacters={availableCharacters}
-      isGM={session.user.email === campaign.ownerEmail || campaign.createdById === userId}
-      canDelete={isOwner}
-      invites={(campaign as any).invites ?? []}
-      inviteActions={{ createInvite, revokeInvite }}
-      gmActions={{
-        createNpc,
-        updateNpc,
-        deleteNpc,
-        createQuest,
-        updateQuest,
-        deleteQuest,
-        updateQuestStatus,
-        createNote,
-        updateNote,
-        deleteNote,
-        createDowntime,
-        advanceDowntime,
-        completeDowntime,
-        cancelDowntime,
-        summarizeLastSession,
-        campaignOverview,
-        nextSessionHooks,
-      }}
-    />
+    <PageShell className="pt-6 pb-12">
+      <SectionHeader
+        title={campaign.name}
+        subtitle={`GM: ${campaign.gmName ?? "Unknown"} · ${sessionCount} session${sessionCount === 1 ? "" : "s"} · ${partyCount} member${partyCount === 1 ? "" : "s"}`}
+
+        breadcrumb="Campaign"
+        actions={
+          <>
+            <Link href="/dashboard">
+              <TavernButton variant="secondary">Back to dashboard</TavernButton>
+            </Link>
+            <Link href={`/campaigns/${campaign.id}/sessions`}>
+              <TavernButton variant="ghost">Sessions dashboard</TavernButton>
+            </Link>
+          </>
+        }
+      />
+      <SectionGroup>
+        <CampaignPageClient
+              campaign={campaignWithRelations}
+              deleteCampaign={deleteCampaign}
+              archiveCampaign={archiveCampaign}
+              restoreCampaign={restoreCampaign}
+              addCharacterToCampaign={addCharacterToCampaign}
+              availableCharacters={availableCharacters}
+              isGM={session.user.email === campaign.ownerEmail || campaign.createdById === userId}
+              canDelete={isOwner}
+              invites={(campaign as any).invites ?? []}
+              inviteActions={{ createInvite, revokeInvite }}
+              gmActions={{
+                createNpc,
+                updateNpc,
+                deleteNpc,
+                createQuest,
+                updateQuest,
+                deleteQuest,
+                updateQuestStatus,
+                createNote,
+                updateNote,
+                deleteNote,
+                createDowntime,
+                advanceDowntime,
+                completeDowntime,
+                cancelDowntime,
+                summarizeLastSession,
+                campaignOverview,
+                nextSessionHooks,
+              }}
+            />
+      </SectionGroup>
+    </PageShell>
   );
 }

@@ -3,8 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-type PageProps = {
-  params: { id: string; sessionId: string };
+type SessionDetailPageParams = {
+  id?: string | string[] | undefined;
+  sessionId?: string | string[] | undefined;
+};
+
+type SessionDetailPageProps = {
+  params?: Promise<SessionDetailPageParams>;
+  searchParams?: Promise<any>;
 };
 
 function describeEvent(ev: any) {
@@ -35,14 +41,34 @@ function describeEvent(ev: any) {
   }
 }
 
-export default async function SessionDetailPage({ params }: PageProps) {
+export default async function SessionDetailPage({ params }: SessionDetailPageProps) {
+  const resolvedParams = await params;
+  const rawCampaignId = resolvedParams?.id;
+  const campaignId =
+    typeof rawCampaignId === "string"
+      ? rawCampaignId
+      : Array.isArray(rawCampaignId)
+      ? rawCampaignId[0]
+      : undefined;
+  const rawSessionId = resolvedParams?.sessionId;
+  const sessionId =
+    typeof rawSessionId === "string"
+      ? rawSessionId
+      : Array.isArray(rawSessionId)
+      ? rawSessionId[0]
+      : undefined;
+
+  if (!campaignId || !sessionId) {
+    notFound();
+  }
+
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const session = await prisma.session.findFirst({
     where: {
-      id: params.sessionId,
-      campaign: { id: params.id, OR: [{ createdById: user.id ?? undefined }, { ownerEmail: user.email ?? undefined }] },
+      id: sessionId,
+      campaign: { id: campaignId, OR: [{ createdById: user.id ?? undefined }, { ownerEmail: user.email ?? undefined }] },
     },
     include: {
       campaign: { select: { id: true, name: true } },
@@ -55,7 +81,9 @@ export default async function SessionDetailPage({ params }: PageProps) {
   }
 
   const startedAt = new Date(session.createdAt);
-  const endedAt = session.endedAt ? new Date(session.endedAt) : null;
+  const endedAtRaw =
+    (session as any).endedAt ?? (session as any).completedAt ?? null;
+  const endedAt = endedAtRaw ? new Date(endedAtRaw) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-slate-100">
@@ -64,7 +92,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Session</p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-              {session.title || `Session ${session.index ?? ""}`.trim()}
+              {session.title || `Session ${(session as any).index ?? ""}`.trim()}
             </h1>
             <p className="mt-2 text-sm text-slate-400">{session.campaign?.name ?? ""}</p>
             <div className="mt-2 text-xs text-slate-500 space-x-2">

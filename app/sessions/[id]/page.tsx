@@ -3,12 +3,28 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-type PageProps = {
-  params: { id: string };
+type SessionPageParams = {
+  id?: string | string[] | undefined;
 };
 
-export default async function SessionPage({ params }: PageProps) {
-  const sessionId = params.id;
+type SessionPageProps = {
+  params?: Promise<SessionPageParams>;
+  searchParams?: Promise<any>;
+};
+
+export default async function SessionPage({ params }: SessionPageProps) {
+  const resolvedParams = await params;
+  const rawIdValue = resolvedParams?.id;
+  const sessionId =
+    typeof rawIdValue === "string"
+      ? rawIdValue
+      : Array.isArray(rawIdValue)
+      ? rawIdValue[0]
+      : undefined;
+
+  if (!sessionId) {
+    return notFound();
+  }
 
   const user = await getCurrentUser();
   if (!user) {

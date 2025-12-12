@@ -4,25 +4,44 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { humanizeEvent } from "@/lib/session-events";
 
-interface PageProps {
-  params: {
-    campaignId: string;
-    characterId: string;
-  };
-}
+type PlayerViewPageParams = {
+  campaignId?: string | string[] | undefined;
+  characterId?: string | string[] | undefined;
+};
+
+type PlayerViewPageProps = {
+  params?: Promise<PlayerViewPageParams>;
+  searchParams?: Promise<any>;
+};
 
 function formatWhen(date: Date) {
   return formatDistanceToNow(date, { addSuffix: true });
 }
 
-export default async function PlayerViewPage({ params }: PageProps) {
+export default async function PlayerViewPage({ params }: PlayerViewPageProps) {
+  const resolvedParams = await params;
+  const rawCampaignId = resolvedParams?.campaignId;
+  const campaignId =
+    typeof rawCampaignId === "string"
+      ? rawCampaignId
+      : Array.isArray(rawCampaignId)
+      ? rawCampaignId[0]
+      : undefined;
+  const rawCharacterId = resolvedParams?.characterId;
+  const characterId =
+    typeof rawCharacterId === "string"
+      ? rawCharacterId
+      : Array.isArray(rawCharacterId)
+      ? rawCharacterId[0]
+      : undefined;
+
+  if (!campaignId || !characterId) {
+    notFound();
+  }
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
   }
-
-  const campaignId = params.campaignId;
-  const characterId = params.characterId;
 
   // Load campaign, character, membership, downtime, and recent events
   const [campaign, character, membership, downtimeActivities, sessionEvents] =
@@ -56,8 +75,7 @@ export default async function PlayerViewPage({ params }: PageProps) {
           campaignId,
           characterId,
         },
-        orderBy: { createdAt: "desc" },
-        take: 20,
+      take: 20,
       }),
       prisma.sessionEvent.findMany({
         where: {
@@ -303,13 +321,14 @@ export default async function PlayerViewPage({ params }: PageProps) {
                             {formatWhen(e.createdAt)}
                           </span>
                         </div>
-                        {e.session && (
-                          <p className="mt-0.5 text-[10px] text-slate-500">
-                            Session on{" "}
-                            {e.session.startedAt?.toLocaleDateString() ||
-                              e.session.createdAt.toLocaleDateString()}
-                          </p>
-                        )}
+                            {e.session && (
+                              <p className="mt-0.5 text-[10px] text-slate-500">
+                                Session on{" "}
+                                {(
+                                  (e.session as any).startedAt ?? e.session.createdAt
+                                ).toLocaleDateString()}
+                              </p>
+                            )}
                       </li>
                     ))}
                   </ul>

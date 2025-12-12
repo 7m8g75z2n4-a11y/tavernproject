@@ -26,21 +26,25 @@ export default async function CharactersPage() {
         <p className="text-sm opacity-70">No characters yet. Create one to get started.</p>
       ) : (
         <div className="space-y-3">
-          {characters.map((c) => (
-            <Link
-              key={c.id}
-              href={`/characters/${c.id}`}
-              className="block p-3 border border-amber-700/50 rounded-lg hover:bg-amber-900/20 transition"
-            >
-              <div className="text-sm font-medium">{c.name}</div>
-              <div className="text-xs opacity-70">{c.subtitle || "Adventurer"}</div>
-              <div className="text-xs opacity-70">
-                {c.hp ? `HP ${c.hp}` : null}
-                {c.ac != null ? (c.hp ? " • " : "") + `AC ${c.ac}` : null}
-                {c.speed ? `${c.hp || c.ac != null ? " • " : ""}${c.speed}` : null}
-              </div>
-            </Link>
-          ))}
+          {characters.map((c) => {
+            const stats: string[] = [];
+            if (c.hp) stats.push(`HP ${c.hp}`);
+            if (c.ac != null) stats.push(`AC ${c.ac}`);
+            if (c.speed) stats.push(c.speed);
+            return (
+              <Link
+                key={c.id}
+                href={`/characters/${c.id}`}
+                className="block p-3 border border-amber-700/50 rounded-lg hover:bg-amber-900/20 transition"
+              >
+                <div className="text-sm font-medium">{c.name}</div>
+                <div className="text-xs opacity-70">{c.subtitle || "Adventurer"}</div>
+                <div className="text-xs opacity-70">
+                  {stats.length > 0 ? stats.join(" | ") : null}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </main>

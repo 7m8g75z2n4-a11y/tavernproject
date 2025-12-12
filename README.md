@@ -70,6 +70,7 @@ Planned future additions:
 
 - Node.js 18+ (recommended)
 - npm or yarn
+- Postgres running locally (default: `localhost:5432`) with a `tavern` database you point `DATABASE_URL` at
 
 ### Install dependencies
 
@@ -78,6 +79,8 @@ npm install
 # or
 yarn install
 ```
+
+Copy `.env.local.example` to `.env` and set `DATABASE_URL`, `NEXTAUTH_SECRET`, and other keys to match your local Postgres instance before running the dev server.
 
 ### Run the dev server
 
@@ -91,7 +94,7 @@ Visit:
 
 - http://localhost:3000 – Landing
 - http://localhost:3000/auth – Auth screen
-- http://localhost:3000/dashboard – Dashboard
+- http://localhost:3000/dashboard — Dashboard (reads from your local Postgres via `DATABASE_URL`)
 - http://localhost:3000/characters/1 – Character Sheet (mock)
 
 ---

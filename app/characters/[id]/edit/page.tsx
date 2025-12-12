@@ -2,14 +2,26 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { notFound } from "next/navigation";
-import { updateCharacter } from "../[id]/actions";
+import { updateCharacter } from "../actions";
 
-type PageProps = {
-  params: { id?: string };
+type CharacterEditPageParams = {
+  id?: string | string[] | undefined;
 };
 
-export default async function CharacterEditPage({ params }: PageProps) {
-  const resolvedId = params.id;
+type CharacterEditPageProps = {
+  params?: Promise<CharacterEditPageParams>;
+  searchParams?: Promise<any>;
+};
+
+export default async function CharacterEditPage({ params }: CharacterEditPageProps) {
+  const resolvedParams = await params;
+  const rawId = resolvedParams?.id;
+  const resolvedId =
+    typeof rawId === "string"
+      ? rawId
+      : Array.isArray(rawId)
+      ? rawId[0]
+      : undefined;
   if (!resolvedId) {
     notFound();
   }

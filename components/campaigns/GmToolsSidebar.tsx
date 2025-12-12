@@ -1,6 +1,9 @@
 ﻿"use client";
 
 import { useMemo, useState, useTransition, type ReactNode } from "react";
+import { TabsShell } from "@/components/ui/TabsShell";
+import { TavernCard } from "@/components/ui/TavernCard";
+import { Sparkles, Users, BookOpen, ListChecks, Clock10 } from "lucide-react";
 
 type GMActionProps = {
   createNpc: (formData: FormData) => Promise<void>;
@@ -72,25 +75,14 @@ export default function GmToolsSidebar({
     });
   }
 
-  return (
-    <div className="rounded-2xl border border-amber-700/40 bg-slate-900/80 shadow-lg shadow-black/40">
-      <header className="px-4 py-3 border-b border-amber-700/30">
-        <h2 className="text-sm font-semibold tracking-wide text-amber-300 uppercase">
-          GM Tools
-        </h2>
-        <p className="text-xs text-slate-400">Run the night from one panel.</p>
-      </header>
-
-      <div className="p-4 space-y-3">
-        <CollapsiblePanel title="NPCs" defaultOpen>
-          <NpcPanel
-            campaignId={campaignId}
-            npcs={npcs}
-            gmActions={gmActions}
-          />
-        </CollapsiblePanel>
-
-        <CollapsiblePanel title="Quests">
+  const tabs = useMemo(
+    () => [
+      { value: "npcs", label: "NPCs", icon: Users, children: <NpcPanel campaignId={campaignId} npcs={npcs} gmActions={gmActions} /> },
+      {
+        value: "quests",
+        label: "Quests",
+        icon: ListChecks,
+        children: (
           <QuestPanel
             campaignId={campaignId}
             activeSessionId={activeSessionId}
@@ -98,9 +90,13 @@ export default function GmToolsSidebar({
             npcs={npcs}
             gmActions={gmActions}
           />
-        </CollapsiblePanel>
-
-        <CollapsiblePanel title="GM Notes">
+        ),
+      },
+      {
+        value: "notes",
+        label: "Notes",
+        icon: BookOpen,
+        children: (
           <NotesPanel
             campaignId={campaignId}
             activeSessionId={activeSessionId}
@@ -110,9 +106,13 @@ export default function GmToolsSidebar({
             sessions={sessions}
             gmActions={gmActions}
           />
-        </CollapsiblePanel>
-
-        <CollapsiblePanel title="Downtime">
+        ),
+      },
+      {
+        value: "downtime",
+        label: "Downtime",
+        icon: Clock10,
+        children: (
           <DowntimePanel
             campaignId={campaignId}
             activeSessionId={activeSessionId}
@@ -121,43 +121,35 @@ export default function GmToolsSidebar({
             finishedDowntime={finishedDowntime}
             gmActions={gmActions}
           />
-        </CollapsiblePanel>
-
-        <CollapsiblePanel title="AI Assistant">
+        ),
+      },
+      {
+        value: "ai",
+        label: "AI",
+        icon: Sparkles,
+        children: (
           <AiPanel
             runAi={runAi}
             aiPending={aiPending}
             aiResult={aiResult}
             gmActions={gmActions}
           />
-        </CollapsiblePanel>
-      </div>
-    </div>
+        ),
+      },
+    ],
+    [campaignId, npcs, quests, gmNotes, downtimeActivities, sessions, partyMembers, activeSessionId, gmActions, aiPending, aiResult]
   );
-}
 
-function CollapsiblePanel({
-  title,
-  children,
-  defaultOpen = false,
-}: {
-  title: string;
-  children: ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/60">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-amber-200"
-      >
-        <span>{title}</span>
-        <span className="text-xs text-slate-400">{open ? "Hide" : "Show"}</span>
-      </button>
-      {open && <div className="px-3 pb-3 pt-1 space-y-3">{children}</div>}
-    </div>
+    <TavernCard className="space-y-0 bg-slate-900/80 px-0">
+      <div className="px-4 py-3 border-b border-slate-800/70">
+        <h2 className="text-sm font-semibold tracking-wide text-amber-300 uppercase">GM Tools</h2>
+        <p className="text-xs text-slate-400">Run the night from one panel.</p>
+      </div>
+      <div className="px-4 py-4">
+        <TabsShell tabs={tabs} className="space-y-4" />
+      </div>
+    </TavernCard>
   );
 }
 
@@ -919,8 +911,5 @@ function AiPanel({
     </div>
   );
 }
-
-
-
 
 

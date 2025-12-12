@@ -3,14 +3,39 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-type PageProps = {
-  params: {
-    campaignId: string;
-    characterId: string;
-  };
+type PlayerCharacterCampaignParams = {
+  campaignId?: string | string[] | undefined;
+  characterId?: string | string[] | undefined;
 };
 
-export default async function PlayerCharacterCampaignPage({ params }: PageProps) {
+type PlayerCharacterCampaignProps = {
+  params?: Promise<PlayerCharacterCampaignParams>;
+  searchParams?: Promise<any>;
+};
+
+export default async function PlayerCharacterCampaignPage({
+  params,
+}: PlayerCharacterCampaignProps) {
+  const resolvedParams = await params;
+  const rawCampaignId = resolvedParams?.campaignId;
+  const campaignId =
+    typeof rawCampaignId === "string"
+      ? rawCampaignId
+      : Array.isArray(rawCampaignId)
+      ? rawCampaignId[0]
+      : undefined;
+  const rawCharacterId = resolvedParams?.characterId;
+  const characterId =
+    typeof rawCharacterId === "string"
+      ? rawCharacterId
+      : Array.isArray(rawCharacterId)
+      ? rawCharacterId[0]
+      : undefined;
+
+  if (!campaignId || !characterId) {
+    notFound();
+  }
+
   const user = await getCurrentUser();
   if (!user?.id || !user.email) {
     redirect("/login");
@@ -18,7 +43,7 @@ export default async function PlayerCharacterCampaignPage({ params }: PageProps)
 
   const character = await prisma.character.findFirst({
     where: {
-      id: params.characterId,
+      id: characterId,
       OR: [
         { createdById: user.id },
         { ownerEmail: user.email },
@@ -28,7 +53,7 @@ export default async function PlayerCharacterCampaignPage({ params }: PageProps)
   if (!character) notFound();
 
   const campaign = await prisma.campaign.findUnique({
-    where: { id: params.campaignId },
+    where: { id: campaignId },
   });
   if (!campaign) notFound();
 
@@ -58,7 +83,6 @@ export default async function PlayerCharacterCampaignPage({ params }: PageProps)
       },
     },
     include: { session: true },
-    orderBy: { createdAt: "desc" },
     take: 50,
   });
 
@@ -67,7 +91,6 @@ export default async function PlayerCharacterCampaignPage({ params }: PageProps)
       campaignId: campaign.id,
       characterId: character.id,
     },
-    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -184,7 +207,9 @@ export default async function PlayerCharacterCampaignPage({ params }: PageProps)
                     className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-sm space-y-1"
                   >
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-slate-100">{d.name ?? d.title}</p>
+                <p className="font-semibold text-slate-100">
+                  {d.name ?? (d as any).title ?? "Downtime"}
+                </p>
                       <span className="text-[11px] uppercase text-slate-400">
                         {d.status}
                       </span>

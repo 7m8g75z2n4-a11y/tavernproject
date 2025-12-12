@@ -12,12 +12,12 @@ async function registerAction(formData: FormData) {
   const confirm = formData.get("confirm")?.toString() || "";
 
   if (!email || !password || password !== confirm) {
-    return { error: "Invalid input or passwords do not match." };
+    throw new Error("Invalid input or passwords do not match.");
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    return { error: "User already exists." };
+    throw new Error("User already exists.");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);

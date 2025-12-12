@@ -4,8 +4,13 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateInviteToken } from "@/lib/invites";
 
-type PageProps = {
-  params: { token: string };
+type JoinPageParams = {
+  token?: string | string[] | undefined;
+};
+
+type JoinPageProps = {
+  params?: Promise<JoinPageParams>;
+  searchParams?: Promise<any>;
 };
 
 async function joinCampaignViaInvite(formData: FormData) {
@@ -59,9 +64,17 @@ async function joinCampaignViaInvite(formData: FormData) {
   redirect(`/play/${invite.campaignId}/${characterId}`);
 }
 
-export default async function JoinPage({ params }: PageProps) {
+export default async function JoinPage({ params }: JoinPageProps) {
+  const resolvedParams = await params;
+  const rawToken = resolvedParams?.token;
+  const token =
+    typeof rawToken === "string"
+      ? rawToken
+      : Array.isArray(rawToken)
+      ? rawToken[0]
+      : undefined;
+
   const user = await getCurrentUser();
-  const token = params?.token;
   if (!token) {
     redirect("/");
   }

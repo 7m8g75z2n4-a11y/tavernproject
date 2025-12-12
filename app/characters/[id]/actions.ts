@@ -1,6 +1,6 @@
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 async function ensureOwner(characterId: string, user: Awaited<ReturnType<typeof getCurrentUser>>) {
@@ -29,7 +29,7 @@ export async function updateCharacter(formData: FormData) {
   const avatarUrl = (formData.get("avatarUrl") ?? "").toString().trim();
   const vibe = (formData.get("vibe") ?? "").toString().trim();
 
-  const appearance = character.appearanceJson ?? {};
+  const appearance = (character as any).appearanceJson ?? {};
   const updatedAppearance = {
     ...appearance,
     primaryColor: (formData.get("primaryColor") ?? appearance.primaryColor ?? "#f97316").toString(),
@@ -46,7 +46,6 @@ export async function updateCharacter(formData: FormData) {
       avatarUrl: avatarUrl || character.avatarUrl,
       appearanceJson: updatedAppearance,
       isArchived: false,
-      deletedAt: null,
     },
   });
 
@@ -68,7 +67,7 @@ export async function archiveCharacter(formData: FormData) {
 
   await prisma.character.update({
     where: { id: characterId },
-    data: { isArchived: true, deletedAt: new Date() },
+    data: { isArchived: true },
   });
 
   revalidatePath(`/characters/${characterId}`);

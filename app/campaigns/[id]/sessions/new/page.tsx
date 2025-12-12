@@ -1,11 +1,7 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-interface NewSessionPageProps {
-  params: { id: string };
-}
 
 async function createSession(formData: FormData) {
   "use server";
@@ -52,7 +48,28 @@ async function createSession(formData: FormData) {
   redirect(`/sessions/${created.id}`);
 }
 
+type NewSessionPageParams = {
+  id?: string | string[] | undefined;
+};
+
+type NewSessionPageProps = {
+  params?: Promise<NewSessionPageParams>;
+  searchParams?: Promise<any>;
+};
+
 export default async function NewSessionPage({ params }: NewSessionPageProps) {
+  const resolvedParams = await params;
+  const rawId = resolvedParams?.id;
+  const campaignId =
+    typeof rawId === "string"
+      ? rawId
+      : Array.isArray(rawId)
+      ? rawId[0]
+      : undefined;
+
+  if (!campaignId) {
+    notFound();
+  }
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
 
@@ -61,7 +78,7 @@ export default async function NewSessionPage({ params }: NewSessionPageProps) {
   }
 
   const campaign = await prisma.campaign.findFirst({
-    where: { id: params.id, ownerEmail: email },
+    where: { id: campaignId, ownerEmail: email },
   });
 
   if (!campaign) {
