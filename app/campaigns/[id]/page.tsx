@@ -3,17 +3,18 @@ import { SessionEventType } from "@prisma/client";
 import { getCurrentUser, authOptions } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import CampaignPageClient from "./CampaignPageClient";
+import CampaignPageClient, { type CampaignWithRelations } from "./CampaignPageClient";
 import { getServerSession } from "next-auth";
 import { generateInviteToken } from "@/lib/invites";
 
-type PageParams = {
-  id: string;
+type CampaignPageParams = {
+  id?: string | string[] | undefined;
 };
 
-interface PageProps {
-  params: PageParams | Promise<PageParams>;
-}
+type CampaignPageProps = {
+  params?: Promise<CampaignPageParams>;
+  searchParams?: Promise<any>;
+};
 
 const prismaAny = prisma as any;
 
@@ -233,7 +234,7 @@ async function addCharacterToCampaign(formData: FormData) {
   revalidatePath(`/campaigns/${campaignId}`);
 }
 
-export async function deleteCampaign(formData: FormData) {
+async function deleteCampaign(formData: FormData) {
   "use server";
   const user = await getCurrentUser();
   if (!user?.id) redirect("/login");
@@ -270,6 +271,58 @@ export async function deleteCampaign(formData: FormData) {
 
   revalidatePath("/");
   redirect("/");
+}
+
+async function archiveCampaign(formData: FormData) {
+  "use server";
+  const user = await getCurrentUser();
+  if (!user?.id) redirect("/login");
+
+  const campaignId = formData.get("campaignId");
+  if (typeof campaignId !== "string") return;
+
+  const campaign = await prisma.campaign.findUnique({
+    where: { id: campaignId },
+    select: { id: true, createdById: true },
+  });
+  if (!campaign || campaign.createdById !== user.id) {
+    redirect("/");
+  }
+
+  await prisma.campaign.update({
+    where: { id: campaignId },
+    data: { isArchived: true, archivedAt: new Date() },
+  });
+
+  revalidatePath(`/campaigns/${campaignId}`);
+  revalidatePath("/campaigns");
+  revalidatePath("/dashboard");
+}
+
+async function restoreCampaign(formData: FormData) {
+  "use server";
+  const user = await getCurrentUser();
+  if (!user?.id) redirect("/login");
+
+  const campaignId = formData.get("campaignId");
+  if (typeof campaignId !== "string") return;
+
+  const campaign = await prisma.campaign.findUnique({
+    where: { id: campaignId },
+    select: { id: true, createdById: true },
+  });
+  if (!campaign || campaign.createdById !== user.id) {
+    redirect("/");
+  }
+
+  await prisma.campaign.update({
+    where: { id: campaignId },
+    data: { isArchived: false, archivedAt: null },
+  });
+
+  revalidatePath(`/campaigns/${campaignId}`);
+  revalidatePath("/campaigns");
+  revalidatePath("/dashboard");
 }
 
 async function createNpc(formData: FormData) {
@@ -565,40 +618,20 @@ async function cancelDowntime(formData: FormData) {
   revalidatePath(`/campaigns/${campaignId}`);
 }
 
-export async function deleteCampaignAction(formData: FormData) {
-  "use server";
+export default async function CampaignPage({ params }: CampaignPageProps) {
+  const resolvedParams = await params;
+  const rawId = resolvedParams?.id;
+  const id =
+    typeof rawId === "string"
+      ? rawId
+      : Array.isArray(rawId)
+      ? rawId[0]
+      : undefined;
 
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect("/login");
+  if (!id || id === "undefined" || id === "null") {
+    notFound();
   }
 
-  const campaignId = formData.get("campaignId");
-  if (typeof campaignId !== "string" || !campaignId) {
-    throw new Error("Missing campaignId");
-  }
-
-  const campaign = await prisma.campaign.findUnique({
-    where: { id: campaignId },
-    select: { id: true, createdById: true },
-  });
-
-  if (!campaign) {
-    redirect("/");
-  }
-
-  if (campaign.createdById && campaign.createdById !== user.id) {
-    throw new Error("You do not have permission to delete this campaign.");
-  }
-
-  await prisma.campaign.delete({
-    where: { id: campaignId },
-  });
-
-  redirect("/");
-}
-
-export default async function CampaignPage({ params }: PageProps) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user || !session.user.email) {
@@ -608,7 +641,9 @@ export default async function CampaignPage({ params }: PageProps) {
   const user = await getCurrentUser();
   const email = user?.email as string;
   const userId = user?.id;
-  const { id } = await params;
+  if (!id || id === "undefined" || id === "null") {
+    notFound();
+  }
 
   if (!id || id === "undefined" || id === "null") {
     notFound();
@@ -656,6 +691,8 @@ export default async function CampaignPage({ params }: PageProps) {
     notFound();
   }
 
+  const campaignWithRelations = campaign as unknown as CampaignWithRelations;
+
   const isGM = campaign.ownerEmail === email;
   const isOwner =
     (campaign.createdById && userId && campaign.createdById === userId) ||
@@ -664,8 +701,10 @@ export default async function CampaignPage({ params }: PageProps) {
 
   return (
     <CampaignPageClient
-      campaign={campaign}
+      campaign={campaignWithRelations}
       deleteCampaign={deleteCampaign}
+      archiveCampaign={archiveCampaign}
+      restoreCampaign={restoreCampaign}
       addCharacterToCampaign={addCharacterToCampaign}
       availableCharacters={availableCharacters}
       isGM={session.user.email === campaign.ownerEmail || campaign.createdById === userId}

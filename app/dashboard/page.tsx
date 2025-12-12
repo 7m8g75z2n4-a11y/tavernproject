@@ -1,4 +1,5 @@
-﻿import { prisma } from "@/lib/prisma";
+﻿// app/dashboard/page.tsx
+import { prisma } from "@/lib/prisma";
 import DashboardClient from "./DashboardClient";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -18,14 +19,19 @@ export default async function DashboardPage() {
     redirect("/auth");
   }
 
-  const [characters, campaigns, sessionCount] = await Promise.all([
+  const [characters, activeCampaigns, archivedCampaigns, sessionCount] = await Promise.all([
     prisma.character.findMany({
       where: { ownerEmail: email, isArchived: false },
       orderBy: { createdAt: "desc" },
     }),
     prisma.campaign.findMany({
-      where: { ownerEmail: email },
+      where: { ownerEmail: email, isArchived: false },
       orderBy: { createdAt: "desc" },
+      include: { _count: { select: { sessions: true } } },
+    }),
+    prisma.campaign.findMany({
+      where: { ownerEmail: email, isArchived: true },
+      orderBy: [{ archivedAt: "desc" }, { createdAt: "desc" }],
       include: { _count: { select: { sessions: true } } },
     }),
     prisma.session.count({ where: { ownerEmail: email } }),
@@ -33,14 +39,15 @@ export default async function DashboardPage() {
 
   const counts: Counts = {
     characters: characters.length,
-    campaigns: campaigns.length,
+    campaigns: activeCampaigns.length + archivedCampaigns.length,
     sessions: sessionCount,
   };
 
   return (
     <DashboardClient
       initialCharacters={characters}
-      initialCampaigns={campaigns}
+      initialCampaigns={activeCampaigns}
+      archivedCampaigns={archivedCampaigns}
       counts={counts}
       userEmail={email}
     />

@@ -7,12 +7,13 @@ import type {
   PartyMember,
   Character,
 } from "@prisma/client";
+import type { FormEvent } from "react";
 import GmToolsSidebar from "@/components/campaigns/GmToolsSidebar";
 import PartyRoom3D, { type PartySeat } from "@/components/PartyRoom3D";
 import { useRouter } from "next/navigation";
 
 type PartyMemberWithCharacter = PartyMember & { character: Character | null };
-type CampaignWithRelations = Campaign & {
+export type CampaignWithRelations = Campaign & {
   sessions: DbSession[];
   partyMembers: PartyMemberWithCharacter[];
   npcs?: any[];
@@ -26,6 +27,8 @@ type Props = {
   campaign: CampaignWithRelations;
   deleteCampaign: (formData: FormData) => Promise<void>;
   addCharacterToCampaign: (formData: FormData) => Promise<void>;
+  archiveCampaign: (formData: FormData) => Promise<void>;
+  restoreCampaign: (formData: FormData) => Promise<void>;
   availableCharacters: Character[];
   isGM: boolean;
   canDelete: boolean;
@@ -65,6 +68,8 @@ export default function CampaignPageClient({
   campaign,
   deleteCampaign,
   addCharacterToCampaign,
+  archiveCampaign,
+  restoreCampaign,
   availableCharacters,
   isGM,
   canDelete,
@@ -73,6 +78,24 @@ export default function CampaignPageClient({
   gmActions,
 }: Props) {
   const router = useRouter();
+  const handleArchiveSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (
+      !confirm(
+        `Archive campaign "${campaign.name}"? It'll be removed from lists until you restore it.`
+      )
+    ) {
+      event.preventDefault();
+    }
+  };
+  const handleRestoreSubmit = (event: FormEvent<HTMLFormElement>) => {
+    if (
+      !confirm(
+        `Restore campaign "${campaign.name}"? It'll become visible in your active lists again.`
+      )
+    ) {
+      event.preventDefault();
+    }
+  };
   const sessionCount = campaign.sessions.length;
   const partyCount = campaign.partyMembers.length;
   const sortedSessions = [...campaign.sessions].sort((a, b) => {
@@ -388,6 +411,40 @@ export default function CampaignPageClient({
               Deleting this campaign will remove all sessions, events, quests, notes, downtime,
               and party links. This cannot be undone.
             </p>
+            {!campaign.isArchived ? (
+              <form
+                action={archiveCampaign}
+                onSubmit={handleArchiveSubmit}
+                className="flex flex-col gap-2"
+              >
+                <input type="hidden" name="campaignId" value={campaign.id} />
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center rounded-lg border border-yellow-500 bg-yellow-600/20 px-4 py-2 text-sm font-semibold text-yellow-100 hover:border-yellow-400 hover:bg-yellow-500/20"
+                >
+                  Archive Campaign
+                </button>
+              </form>
+            ) : (
+              <>
+                <p className="text-sm text-amber-200/80">
+                  This campaign is archived. Restore it to bring it back to your dashboards.
+                </p>
+                <form
+                  action={restoreCampaign}
+                  onSubmit={handleRestoreSubmit}
+                  className="flex flex-col gap-2"
+                >
+                  <input type="hidden" name="campaignId" value={campaign.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center rounded-lg border border-emerald-500 bg-emerald-600/20 px-4 py-2 text-sm font-semibold text-emerald-100 hover:border-emerald-400 hover:bg-emerald-500/20"
+                  >
+                    Restore Campaign
+                  </button>
+                </form>
+              </>
+            )}
             <form
               action={deleteCampaign}
               onSubmit={(e) => {

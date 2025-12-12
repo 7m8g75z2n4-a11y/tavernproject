@@ -15,6 +15,7 @@ type CampaignWithCounts = Campaign & { _count?: { sessions: number } };
 type DashboardClientProps = {
   initialCharacters: Character[];
   initialCampaigns: CampaignWithCounts[];
+  archivedCampaigns: CampaignWithCounts[];
   counts: Counts;
   userEmail: string;
 };
@@ -24,11 +25,13 @@ type TabId = "characters" | "campaigns" | "settings";
 export default function DashboardClient({
   initialCharacters,
   initialCampaigns,
+  archivedCampaigns,
   counts,
   userEmail,
 }: DashboardClientProps) {
   const [characters] = useState<Character[]>(initialCharacters);
   const [campaigns] = useState<CampaignWithCounts[]>(initialCampaigns);
+  const [showArchived, setShowArchived] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("characters");
 
   return (
@@ -124,18 +127,29 @@ export default function DashboardClient({
                 <h2>Your Campaigns</h2>
                 <p>Step back into the stories you're telling.</p>
               </div>
-              <div className="dashboard-section-actions">
-                <Link href="/sessions">
-                  <button className="btn-secondary dashboard-section-cta">
-                    Sessions Dashboard
-                  </button>
-                </Link>
-                <Link href="/campaigns/new">
-                  <button className="btn-secondary dashboard-section-cta">
-                    Host a Campaign
-                  </button>
-                </Link>
-              </div>
+            <div className="dashboard-section-actions">
+              <Link href="/sessions">
+                <button className="btn-secondary dashboard-section-cta">
+                  Sessions Dashboard
+                </button>
+              </Link>
+              <Link href="/campaigns/new">
+                <button className="btn-secondary dashboard-section-cta">
+                  Host a Campaign
+                </button>
+              </Link>
+              {archivedCampaigns.length > 0 && (
+                <button
+                  type="button"
+                  className="btn-secondary dashboard-section-cta"
+                  onClick={() => setShowArchived((prev) => !prev)}
+                >
+                  {showArchived
+                    ? "Hide archived"
+                    : `Show archived (${archivedCampaigns.length})`}
+                </button>
+              )}
+            </div>
             </header>
 
             {campaigns.length === 0 ? (
@@ -174,6 +188,45 @@ export default function DashboardClient({
                     </Link>
                   </article>
                 ))}
+              </div>
+            )}
+            {showArchived && (
+              <div className="mt-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-amber-100">
+                    Archived campaigns
+                  </h3>
+                </div>
+                {archivedCampaigns.length === 0 ? (
+                  <p className="dashboard-empty text-sm">
+                    No archived campaigns yet.
+                  </p>
+                ) : (
+                  <div className="dashboard-grid">
+                    {archivedCampaigns.map((c) => (
+                      <article
+                        key={c.id}
+                        className="card parchment-card campaign-card border-dashed border-amber-500/30"
+                      >
+                        <div className="card-header">
+                          <h3>{c.name}</h3>
+                          <p className="card-subtitle text-xs uppercase tracking-[0.2em] text-slate-400">
+                            Archived
+                          </p>
+                        </div>
+                        <p className="card-meta text-xs text-slate-400">
+                          GM {c.gmName || "Unknown"} ·{" "}
+                          {new Date(c.archivedAt ?? c.updatedAt).toLocaleDateString()}
+                        </p>
+                        <Link href={`/campaigns/${c.id}`}>
+                          <button className="btn-secondary card-button">
+                            Open Campaign
+                          </button>
+                        </Link>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </section>

@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import CampaignsList from "./CampaignsList";
 
 async function createCampaign(formData: FormData) {
   "use server";
@@ -36,39 +36,32 @@ export default async function CampaignsPage() {
 
   if (!email || !user?.id) redirect("/login");
 
-  const campaigns = await prisma.campaign.findMany({
-    where: { OR: [{ ownerEmail: email }, { createdById: user.id }] },
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { sessions: true } } },
-  });
+  const [activeCampaigns, archivedCampaigns] = await Promise.all([
+    prisma.campaign.findMany({
+      where: {
+        OR: [{ ownerEmail: email }, { createdById: user.id }],
+        isArchived: false,
+      },
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { sessions: true } } },
+    }),
+    prisma.campaign.findMany({
+      where: {
+        OR: [{ ownerEmail: email }, { createdById: user.id }],
+        isArchived: true,
+      },
+      orderBy: [{ archivedAt: "desc" }, { createdAt: "desc" }],
+    }),
+  ]);
 
   return (
     <main className="min-h-screen p-6 bg-black text-amber-100">
       <h1 className="text-2xl font-semibold mb-4">Your Campaigns</h1>
 
-      {campaigns.length === 0 ? (
-        <p className="text-sm opacity-70 mb-6">
-          No campaigns yet. The tables in this tavern are still clean.
-        </p>
-      ) : (
-        <div className="space-y-3 mb-6">
-          {campaigns.map((c) => (
-            <Link
-              key={c.id}
-              href={`/campaigns/${c.id}`}
-              className="block p-3 border border-amber-700/50 rounded-lg hover:bg-amber-900/20 transition"
-            >
-              <div className="text-sm font-medium">{c.name}</div>
-              {c.description && (
-                <div className="text-xs opacity-70 line-clamp-2">
-                  {c.description}
-                </div>
-              )}
-              <div className="text-[10px] opacity-60 mt-1">GM: {c.gmName ?? "Unknown"}</div>
-            </Link>
-          ))}
-        </div>
-      )}
+      <CampaignsList
+        activeCampaigns={activeCampaigns}
+        archivedCampaigns={archivedCampaigns}
+      />
 
       <section className="max-w-md border border-amber-700/40 rounded-lg p-4 bg-amber-900/10">
         <h2 className="text-sm font-semibold mb-2">Create a new campaign</h2>
